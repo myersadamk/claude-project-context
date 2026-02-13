@@ -5,7 +5,7 @@ sources:
       update: git -C ../claude-skills pull
 
 profiles:
-  astro:
+  astro-web:
     rules:
       - universal
       - typescript-web
@@ -13,7 +13,7 @@ profiles:
     skills:
       - vibesec
 
-  nextjs:
+  nextjs-web:
     rules:
       - universal
       - typescript-web

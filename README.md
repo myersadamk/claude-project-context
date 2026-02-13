@@ -44,7 +44,7 @@ sources:
       update: git -C ../claude-skills pull
 
 profiles:
-  astro:
+  astro-web:
     rules:
       - universal
       - typescript-web
@@ -52,7 +52,7 @@ profiles:
     skills:
       - vibesec
 
-  nextjs:
+  nextjs-web:
     rules:
       - universal
       - typescript-web
@@ -74,7 +74,7 @@ Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
 uv run cpc install /path/to/project
 
 # Non-interactive -- specify profile by name
-uv run cpc install /path/to/project --profile astro
+uv run cpc install /path/to/project --profile astro-web
 
 # Re-apply from manifest and refresh sources
 uv run cpc update /path/to/project

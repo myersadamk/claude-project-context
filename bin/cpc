@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Wrapper to run cpc from anywhere. Install with:
+#   ln -sf /Users/koi/Repositories/myersadamk/claude-project-context/bin/cpc /usr/local/bin/cpc
+
+set -euo pipefail
+
+REPO_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+
+# Default target to current directory if first positional arg after subcommand
+# is missing or is a flag. Usage:
+#   cpc install                     → cpc install . (current dir)
+#   cpc install --profile astro-web → cpc install . --profile astro-web
+#   cpc install /some/path          → cpc install /some/path
+#   cpc status                      → cpc status . (current dir)
+#   cpc update                      → cpc update . (current dir)
+
+args=("$@")
+
+# If we have a subcommand and the next arg is missing or a flag, inject "."
+if [[ ${#args[@]} -ge 1 ]]; then
+    subcmd="${args[0]}"
+    case "$subcmd" in
+        install|update|status)
+            if [[ ${#args[@]} -eq 1 ]] || [[ "${args[1]}" == -* ]]; then
+                # Insert "." after the subcommand
+                args=("$subcmd" "." "${args[@]:1}")
+            fi
+            ;;
+    esac
+fi
+
+exec uv run --project "$REPO_DIR" cpc "${args[@]}"
