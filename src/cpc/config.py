@@ -39,6 +39,7 @@ class RuleSet(StrEnum):
     ASTRO = "astro"
     NEXTJS = "nextjs"
     PYTHON = "python"
+    PYTHON_CLI = "python-cli"
 
 
 @dataclass(frozen=True)
@@ -169,7 +170,7 @@ def discover_rules(rule_sets: list[RuleSet], *, rules_dir: Path = RULES_DIR) -> 
 @click.command()
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
 def status(target: Path) -> None:
-    """Show what's installed in a project."""
+    """Show installed profile, rule sets, skills, and symlink health."""
     target = target.resolve()
     manifest = load_manifest(target)
 

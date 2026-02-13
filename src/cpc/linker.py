@@ -310,7 +310,7 @@ def install(target: Path, profile_name: str | None) -> None:
 @click.command()
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
 def update(target: Path) -> None:
-    """Update an existing installation from its manifest."""
+    """Re-apply profile from manifest and refresh skill sources."""
     target = target.resolve()
     manifest = load_manifest(target)
 

@@ -20,3 +20,8 @@ profiles:
       - nextjs
     skills:
       - vibesec
+  python:
+    rules:
+      - universal
+      - python
+      - python-cli

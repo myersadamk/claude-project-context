@@ -46,13 +46,6 @@
 - `raise SystemExit(1)` in CLI commands, not `sys.exit()` — testable without mocking
 - Let TypeErrors and AttributeErrors propagate — they indicate bugs, not user errors
 
-## CLI Patterns (click)
-
-- Co-locate click commands with the module that owns their logic
-- Thin entry point (`cli.py`) that only assembles the group with `add_command`
-- `click.Path(exists=True, file_okay=False, path_type=Path)` for directory arguments
-- `click.prompt()` for interactive input — not raw `input()`
-
 ## Project Structure
 
 - `src/` layout for packages (`src/package/`)
