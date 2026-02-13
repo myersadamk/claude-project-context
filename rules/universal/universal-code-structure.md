@@ -10,7 +10,7 @@
 
 Each function does one thing at one level of abstraction.
 
-- If you can describe a block with a comment like `# Step 3: clean stale entries`, that block is a candidate for its own function.
+- If you can describe a block with a comment like "Step 3: clean stale entries", that block is a candidate for its own function.
 - If the same pattern appears twice with minor variations, extract it. Don't wait for a third occurrence.
 - A function that creates, validates, transforms, AND persists is doing too much.
 
@@ -19,7 +19,7 @@ Each function does one thing at one level of abstraction.
 Prefer a high-level function that reads like an outline:
 
 ```
-def install():
+install():
     prepare_directories()
     sync_rules()
     sync_skills()
@@ -34,24 +34,21 @@ Each step is a focused function. The parent function shows intent; the children 
 - Use early returns, `continue`, and guard clauses to flatten logic.
 - Deeply nested code is a signal to extract a helper.
 
-```python
-# Bad — 4 levels deep
-def process(items):
+```
+// Bad — 4 levels deep
+process(items):
     for item in items:
-        if item.is_valid:
-            if item.needs_update:
-                if not item.is_locked:
+        if item.isValid:
+            if item.needsUpdate:
+                if not item.isLocked:
                     update(item)
 
-# Good — guard clauses flatten it
-def process(items):
+// Good — guard clauses flatten it
+process(items):
     for item in items:
-        if not item.is_valid:
-            continue
-        if not item.needs_update:
-            continue
-        if item.is_locked:
-            continue
+        if not item.isValid → continue
+        if not item.needsUpdate → continue
+        if item.isLocked → continue
         update(item)
 ```
 
@@ -59,27 +56,26 @@ def process(items):
 
 Return early for preconditions and error cases. Don't wrap the entire function body in an `if`.
 
-```python
-# Bad
-def get_user(id):
-    if id is not None:
+```
+// Bad — nested conditionals
+getUser(id):
+    if id is not null:
         user = lookup(id)
-        if user is not None:
+        if user is not null:
             return user
-    return None
+    return null
 
-# Good
-def get_user(id):
-    if id is None:
-        return None
+// Good — early return
+getUser(id):
+    if id is null → return null
     return lookup(id)
 ```
 
 ## Naming
 
-- Names describe **what**, not **how**: `active_users` not `filtered_list`
-- Boolean names state the condition: `is_stale`, `has_manifest`, `should_clean`
-- Function names are verbs: `resolve_skill`, `discover_rules`, `clean_stale_links`
+- Names describe **what**, not **how**: `activeUsers` not `filteredList`
+- Boolean names state the condition: `isStale`, `hasManifest`, `shouldClean`
+- Function names are verbs: `resolveSkill`, `discoverRules`, `cleanStaleLinks`
 - Avoid generic names: `data`, `result`, `items`, `tmp`, `val` — unless the scope is 3 lines or fewer
 - No abbreviations in public APIs: `configuration` not `cfg`, `manifest` not `mfst`
 
@@ -87,19 +83,19 @@ def get_user(id):
 
 Within a single function, all statements should operate at the same level of detail. Don't mix high-level orchestration with low-level implementation.
 
-```python
-# Bad — mixed levels
-def deploy():
-    validate_config()
-    socket.connect(host, port)  # low-level detail
-    send_bytes(payload)         # low-level detail
-    notify_team()
+```
+// Bad — mixed levels
+deploy():
+    validateConfig()
+    socket.connect(host, port)   // low-level detail
+    sendBytes(payload)           // low-level detail
+    notifyTeam()
 
-# Good — consistent level
-def deploy():
-    validate_config()
-    upload_artifact()
-    notify_team()
+// Good — consistent level
+deploy():
+    validateConfig()
+    uploadArtifact()
+    notifyTeam()
 ```
 
 ## Anti-Patterns
