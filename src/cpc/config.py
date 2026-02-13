@@ -4,13 +4,12 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from enum import StrEnum
 from pathlib import Path
 
 import click
 import yaml
 
-from cpc.console import console, print_error
+from cpc.console import console, print_error, print_warning
 
 MANIFEST_NAME = ".cpc.manifest.json"
 
@@ -31,14 +30,11 @@ RULES_DIR = REPO_ROOT / "rules"
 # ── Types ──────────────────────────────────────────────────────────
 
 
-class RuleSet(StrEnum):
-    """Available rule set names, matching rules/ subdirectories."""
-
-    UNIVERSAL = "universal"
-    TYPESCRIPT_WEB = "typescript-web"
-    ASTRO = "astro"
-    NEXTJS = "nextjs"
-    PYTHON_CLI = "python-cli"
+def available_rule_sets(*, rules_dir: Path = RULES_DIR) -> list[str]:
+    """Discover available rule sets from the rules/ directory."""
+    if not rules_dir.is_dir():
+        return []
+    return sorted(d.name for d in rules_dir.iterdir() if d.is_dir())
 
 
 @dataclass(frozen=True)
@@ -54,7 +50,7 @@ class Profile:
     """A named combination of rule sets and skills for a project type."""
 
     name: str
-    rules: list[RuleSet]
+    rules: list[str]
     skills: list[str]
 
 
@@ -97,9 +93,14 @@ def load_config(config_path: Path | None = None) -> Config:
             SkillSource(path=path, update=entry.get("update"))
         )
 
+    known_sets = set(available_rule_sets())
     profiles: dict[str, Profile] = {}
     for name, data in raw.get("profiles", {}).items():
-        rules = [RuleSet(r) for r in data.get("rules", [])]
+        rules: list[str] = []
+        for r in data.get("rules", []):
+            if r not in known_sets:
+                print_warning(f"Profile '{name}' references unknown rule set '{r}'.")
+            rules.append(r)
         skills = data.get("skills", [])
         profiles[name] = Profile(name=name, rules=rules, skills=skills)
 
@@ -129,7 +130,7 @@ def save_manifest(target: Path, profile: Profile) -> None:
     data = {
         "source": str(REPO_ROOT),
         "profile": profile.name,
-        "rules": [str(r) for r in profile.rules],
+        "rules": profile.rules,
         "skills": profile.skills,
         "installed": str(__import__("datetime").date.today()),
     }
@@ -151,11 +152,11 @@ def resolve_skill(name: str, sources: list[SkillSource]) -> Path | None:
     return None
 
 
-def discover_rules(rule_sets: list[RuleSet], *, rules_dir: Path = RULES_DIR) -> dict[RuleSet, list[Path]]:
+def discover_rules(rule_sets: list[str], *, rules_dir: Path = RULES_DIR) -> dict[str, list[Path]]:
     """Find all .md files for the given rule sets."""
-    result: dict[RuleSet, list[Path]] = {}
+    result: dict[str, list[Path]] = {}
     for rule_set in rule_sets:
-        set_dir = rules_dir / rule_set.value
+        set_dir = rules_dir / rule_set
         if set_dir.is_dir():
             result[rule_set] = sorted(set_dir.glob("*.md"))
         else:

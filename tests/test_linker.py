@@ -45,7 +45,6 @@ class TestSafetyInvariants:
     def test_never_deletes_non_symlink_files(self, tmp_path: Path) -> None:
         """A real file in .claude/rules/ must survive install — it's a local override."""
         from cpc.linker import install_profile
-        from cpc.config import RuleSet
 
         rules_dir = _create_source_rules(tmp_path)
         target = _create_target(tmp_path)
@@ -58,7 +57,7 @@ class TestSafetyInvariants:
 
         install_profile(
             target=target,
-            rule_sets=[RuleSet.UNIVERSAL],
+            rule_sets=["universal"],
             skill_dirs=[],
             rules_dir=rules_dir,
         )
@@ -71,7 +70,6 @@ class TestSafetyInvariants:
     def test_never_overwrites_non_symlink_files(self, tmp_path: Path) -> None:
         """Install must not replace a real file with a symlink."""
         from cpc.linker import install_profile
-        from cpc.config import RuleSet
 
         rules_dir = _create_source_rules(tmp_path)
         target = _create_target(tmp_path)
@@ -83,7 +81,7 @@ class TestSafetyInvariants:
 
         install_profile(
             target=target,
-            rule_sets=[RuleSet.UNIVERSAL],
+            rule_sets=["universal"],
             skill_dirs=[],
             rules_dir=rules_dir,
         )
@@ -94,7 +92,6 @@ class TestSafetyInvariants:
     def test_stale_cleanup_only_removes_our_symlinks(self, tmp_path: Path) -> None:
         """Cleanup must not touch symlinks that point outside our sources."""
         from cpc.linker import install_profile
-        from cpc.config import RuleSet
 
         rules_dir = _create_source_rules(tmp_path)
         target = _create_target(tmp_path)
@@ -110,7 +107,7 @@ class TestSafetyInvariants:
 
         install_profile(
             target=target,
-            rule_sets=[RuleSet.UNIVERSAL],
+            rule_sets=["universal"],
             skill_dirs=[],
             rules_dir=rules_dir,
         )
@@ -122,7 +119,6 @@ class TestSafetyInvariants:
     def test_only_writes_inside_claude_directory(self, tmp_path: Path) -> None:
         """No files should be created outside .claude/ in the target."""
         from cpc.linker import install_profile
-        from cpc.config import RuleSet
 
         rules_dir = _create_source_rules(tmp_path)
         skills_dir = _create_source_skills(tmp_path)
@@ -135,7 +131,7 @@ class TestSafetyInvariants:
 
         install_profile(
             target=target,
-            rule_sets=[RuleSet.UNIVERSAL, RuleSet.TYPESCRIPT_WEB],
+            rule_sets=["universal", "typescript-web"],
             skill_dirs=[(skills_dir / "vibesec")],
             rules_dir=rules_dir,
         )
@@ -151,14 +147,13 @@ class TestCorrectBehavior:
 
     def test_creates_symlinks_for_selected_rules(self, tmp_path: Path) -> None:
         from cpc.linker import install_profile
-        from cpc.config import RuleSet
 
         rules_dir = _create_source_rules(tmp_path)
         target = _create_target(tmp_path)
 
         result = install_profile(
             target=target,
-            rule_sets=[RuleSet.UNIVERSAL],
+            rule_sets=["universal"],
             skill_dirs=[],
             rules_dir=rules_dir,
         )
@@ -171,7 +166,6 @@ class TestCorrectBehavior:
 
     def test_creates_symlinks_for_selected_skills(self, tmp_path: Path) -> None:
         from cpc.linker import install_profile
-        from cpc.config import RuleSet
 
         rules_dir = _create_source_rules(tmp_path)
         skills_dir = _create_source_skills(tmp_path)
@@ -191,18 +185,17 @@ class TestCorrectBehavior:
 
     def test_replaces_existing_symlinks(self, tmp_path: Path) -> None:
         from cpc.linker import install_profile
-        from cpc.config import RuleSet
 
         rules_dir = _create_source_rules(tmp_path)
         target = _create_target(tmp_path)
 
         # Install twice
         install_profile(
-            target=target, rule_sets=[RuleSet.UNIVERSAL],
+            target=target, rule_sets=["universal"],
             skill_dirs=[], rules_dir=rules_dir,
         )
         result = install_profile(
-            target=target, rule_sets=[RuleSet.UNIVERSAL],
+            target=target, rule_sets=["universal"],
             skill_dirs=[], rules_dir=rules_dir,
         )
 
@@ -211,7 +204,6 @@ class TestCorrectBehavior:
 
     def test_cleans_stale_symlinks_on_update(self, tmp_path: Path) -> None:
         from cpc.linker import install_profile
-        from cpc.config import RuleSet
 
         rules_dir = _create_source_rules(tmp_path)
         target = _create_target(tmp_path)
@@ -219,14 +211,14 @@ class TestCorrectBehavior:
         # Install universal + typescript-web
         install_profile(
             target=target,
-            rule_sets=[RuleSet.UNIVERSAL, RuleSet.TYPESCRIPT_WEB],
+            rule_sets=["universal", "typescript-web"],
             skill_dirs=[], rules_dir=rules_dir,
         )
 
         # Re-install with only universal — typescript-web links should be cleaned
         result = install_profile(
             target=target,
-            rule_sets=[RuleSet.UNIVERSAL],
+            rule_sets=["universal"],
             skill_dirs=[], rules_dir=rules_dir,
         )
 
@@ -236,12 +228,11 @@ class TestCorrectBehavior:
 
     def test_idempotent_reinstall(self, tmp_path: Path) -> None:
         from cpc.linker import install_profile
-        from cpc.config import RuleSet
 
         rules_dir = _create_source_rules(tmp_path)
         target = _create_target(tmp_path)
 
-        sets = [RuleSet.UNIVERSAL, RuleSet.TYPESCRIPT_WEB]
+        sets = ["universal", "typescript-web"]
 
         result1 = install_profile(
             target=target, rule_sets=sets,

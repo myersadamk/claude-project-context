@@ -22,7 +22,6 @@ from cpc.config import (
     RULES_DIR,
     Config,
     Profile,
-    RuleSet,
     discover_rules,
     load_config,
     load_manifest,
@@ -171,7 +170,7 @@ def _sync_directory(
 def install_profile(
     *,
     target: Path,
-    rule_sets: list[RuleSet],
+    rule_sets: list[str],
     skill_dirs: list[Path],
     rules_dir: Path = RULES_DIR,
 ) -> InstallResult:
@@ -201,7 +200,7 @@ def install_profile(
             results=results,
         )
 
-    profile_name = "+".join(rs.value for rs in rule_sets) if rule_sets else "custom"
+    profile_name = "+".join(rule_sets) if rule_sets else "custom"
     return InstallResult(
         target_dir=target,
         profile=profile_name,
@@ -221,7 +220,7 @@ def _select_profile(config: Config) -> Profile:
 
     print_heading("Available profiles:")
     for i, profile in enumerate(profiles, 1):
-        rules_str = ", ".join(r.value for r in profile.rules)
+        rules_str = ", ".join(profile.rules)
         skills_str = ", ".join(profile.skills) if profile.skills else "(none)"
         console.print(f"  {i}. [label]{profile.name}[/]")
         console.print(f"     Rules:  {rules_str}")
