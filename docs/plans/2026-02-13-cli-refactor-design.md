@@ -124,9 +124,9 @@ claude-project-context/
 ├── src/
 │   └── cpc/
 │       ├── __init__.py
-│       ├── cli.py           # click command definitions
-│       ├── config.py        # YAML config loading + validation
-│       ├── linker.py        # symlink logic
+│       ├── cli.py           # thin entry point: click group + add_command
+│       ├── config.py        # YAML config loading + validation + `status` command
+│       ├── linker.py        # symlink logic + `install` and `update` commands
 │       └── console.py       # rich console + logging helpers
 ├── config.yaml
 ├── rules/                   # (unchanged)
@@ -252,6 +252,21 @@ class InstallResult:
     def cleaned(self) -> list[LinkResult]:
         return [r for r in self.results if r.action == LinkAction.CLEANED]
 ```
+
+### CLI co-location convention
+
+Click commands live in the module that owns their logic, not in a
+central `cli.py`. This keeps command declarations, options, and
+implementation together:
+
+- `linker.py` — defines `install` and `update` commands
+- `config.py` — defines `status` command
+- `cli.py` — thin entry point that creates the click group and calls
+  `add_command` for each. No logic, no options, no imports beyond
+  the command functions
+
+When adding a new command, put it in the module it naturally belongs
+to. `cli.py` only changes to register it.
 
 ### Typing conventions
 
