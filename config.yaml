@@ -1,0 +1,28 @@
+sources:
+  skills:
+    - path: skills/
+    - path: ../claude-skills
+      update: git -C ../claude-skills pull
+
+profiles:
+  astro-web:
+    rules:
+      - universal
+      - typescript-web
+      - astro
+    skills:
+      - vibesec
+      - interface-design
+
+  nextjs-web:
+    rules:
+      - universal
+      - typescript-web
+      - nextjs
+    skills:
+      - vibesec
+      - interface-design
+  python-cli:
+    rules:
+      - universal
+      - python-cli
