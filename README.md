@@ -19,10 +19,10 @@ Rules and skills live here as markdown files organized by technology stack. The 
 | Set | Files | Purpose |
 | --- | --- | --- |
 | `universal` | `universal-review.md`, `universal-security.md`, `universal-code-structure.md` | Quality gate, security baseline, readability |
-| `typescript-web` | `typescript-web-types.md`, `typescript-web-tailwind.md`, `typescript-web-ui.md`, `typescript-web-best-practices.md` | TypeScript + Tailwind web projects |
+| `typescript-web` | `typescript-web-types.md`, `typescript-web-tailwind.md`, `typescript-web-ui.md`, `typescript-web-best-practices.md`, `typescript-web-review.md` | TypeScript + Tailwind web projects |
 | `astro` | `astro-framework.md`, `astro-testing.md` | Astro-specific patterns |
 | `nextjs` | `nextjs-architecture.md`, `nextjs-mdx.md` | Next.js App Router + MDX |
-| `python-cli` | `python-cli-best-practices.md`, `python-cli-click.md`, `python-cli-typing.md` | Python CLI projects (uv, click, rich) |
+| `python-cli` | `python-cli-best-practices.md`, `python-cli-click.md`, `python-cli-typing.md`, `python-cli-review.md` | Python CLI projects (uv, click, rich) |
 
 ### Composable combinations
 
@@ -98,21 +98,14 @@ The installer:
 
 ## Verification gate
 
-All typescript-web projects must define these scripts in `package.json`:
+Each rule set defines its own verification commands in a `*-review.md` file:
 
-| Script | Purpose |
-| --- | --- |
-| `lint` | Linter |
-| `typecheck` | Type checker |
-| `format:check` | Formatter check |
-| `test` | Test suite |
-| `build` | Production build |
+| Rule set | Review file | Commands |
+| --- | --- | --- |
+| `typescript-web` | `typescript-web-review.md` | `npm run lint && npm run typecheck && npm run format:check && npm run test && npm run build` |
+| `python-cli` | `python-cli-review.md` | `uv run pytest` |
 
-The universal review rule enforces:
-
-```bash
-npm run lint && npm run typecheck && npm run format:check && npm run test && npm run build
-```
+Run `/cpc:init` after installing to generate the correct commands in your project's `CLAUDE.md`.
 
 ## Adding rules
 
@@ -127,6 +120,27 @@ npm run lint && npm run typecheck && npm run format:check && npm run test && npm
 3. Reference the skill by directory name in a profile's `skills` list in `config.yaml`
 
 To add an external skill source, add an entry to `sources.skills` in `config.yaml` with its path and an optional `update` command.
+
+## Built-in skills
+
+Two skills ship with cpc and are added to every profile:
+
+| Skill | Trigger | Purpose |
+| --- | --- | --- |
+| `cpc:init` | `/cpc:init` | Generate or update `CLAUDE.md` with verification commands and profile metadata from installed rules |
+| `cpc:audit` | `/cpc:audit` | Reload all rules into context and audit recent changes against them |
+
+### cpc:init
+
+Run after `cpc install` or when a project has no `CLAUDE.md`. Reads `*-review.md` files from `.claude/rules/` to extract verification commands, then generates a managed section in `CLAUDE.md` delimited by `<!-- cpc:start -->` / `<!-- cpc:end -->` markers.
+
+### cpc:audit
+
+Run before a PR or when rules have drifted out of context during a long session. Re-reads every rule file in `.claude/rules/`, diffs recent changes, and reports a compliance checklist with specific file:line references.
+
+### Review file convention
+
+Each rule set can include a `*-review.md` file with stack-specific verification commands and a review checklist. These are what `cpc:init` reads to generate `CLAUDE.md` and what `cpc:audit` uses for compliance checking.
 
 ## Local overrides
 
