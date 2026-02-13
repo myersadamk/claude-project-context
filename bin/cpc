@@ -14,19 +14,17 @@ REPO_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
 #   cpc status                      → cpc status . (current dir)
 #   cpc update                      → cpc update . (current dir)
 
-args=("$@")
-
 # If we have a subcommand and the next arg is missing or a flag, inject "."
-if [[ ${#args[@]} -ge 1 ]]; then
-    subcmd="${args[0]}"
+if [[ $# -ge 1 ]]; then
+    subcmd="$1"
     case "$subcmd" in
         install|update|status)
-            if [[ ${#args[@]} -eq 1 ]] || [[ "${args[1]}" == -* ]]; then
-                # Insert "." after the subcommand
-                args=("$subcmd" "." "${args[@]:1}")
+            if [[ $# -eq 1 ]] || [[ "$2" == -* ]]; then
+                shift
+                exec uv run --project "$REPO_DIR" cpc "$subcmd" "." "$@"
             fi
             ;;
     esac
 fi
 
-exec uv run --project "$REPO_DIR" cpc "${args[@]}"
+exec uv run --project "$REPO_DIR" cpc "$@"
