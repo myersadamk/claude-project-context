@@ -12,9 +12,20 @@ import yaml
 
 from cpc.console import console, print_error
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+MANIFEST_NAME = ".cpc.manifest.json"
+
+
+def _find_repo_root() -> Path:
+    """Walk up from this file to find the repo root (contains pyproject.toml)."""
+    current = Path(__file__).resolve()
+    for parent in current.parents:
+        if (parent / "pyproject.toml").exists():
+            return parent
+    raise RuntimeError("Could not find repo root (no pyproject.toml found)")
+
+
+REPO_ROOT = _find_repo_root()
 RULES_DIR = REPO_ROOT / "rules"
-MANIFEST_NAME = ".manifest.json"
 
 
 # ── Types ──────────────────────────────────────────────────────────
@@ -27,6 +38,7 @@ class RuleSet(StrEnum):
     TYPESCRIPT_WEB = "typescript-web"
     ASTRO = "astro"
     NEXTJS = "nextjs"
+    PYTHON = "python"
 
 
 @dataclass(frozen=True)
@@ -56,7 +68,7 @@ class Config:
 
 @dataclass(frozen=True)
 class Manifest:
-    """Recorded state of an installation, written to .manifest.json."""
+    """Recorded state of an installation, written to .cpc.manifest.json."""
 
     source: str
     profile: str
@@ -95,7 +107,7 @@ def load_config(config_path: Path | None = None) -> Config:
 
 
 def load_manifest(target: Path) -> Manifest | None:
-    """Load .manifest.json from a target project."""
+    """Load .cpc.manifest.json from a target project."""
     manifest_path = target / ".claude" / "rules" / MANIFEST_NAME
     if not manifest_path.exists():
         return None
@@ -111,7 +123,7 @@ def load_manifest(target: Path) -> Manifest | None:
 
 
 def save_manifest(target: Path, profile: Profile) -> None:
-    """Write .manifest.json to the target project."""
+    """Write .cpc.manifest.json to the target project."""
     manifest_path = target / ".claude" / "rules" / MANIFEST_NAME
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     data = {

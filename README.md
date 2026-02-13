@@ -22,6 +22,7 @@ Rules and skills live here as markdown files organized by technology stack. The 
 | `typescript-web` | `typescript-web-types.md`, `typescript-web-tailwind.md`, `typescript-web-ui.md`, `typescript-web-best-practices.md` | TypeScript + Tailwind web projects |
 | `astro` | `astro-framework.md`, `astro-testing.md` | Astro-specific patterns |
 | `nextjs` | `nextjs-architecture.md`, `nextjs-mdx.md` | Next.js App Router + MDX |
+| `python` | `python-best-practices.md` | Python CLI and library projects |
 
 ### Composable combinations
 
@@ -29,6 +30,7 @@ Rules and skills live here as markdown files organized by technology stack. The 
 | --- | --- |
 | Next.js site | `universal` + `typescript-web` + `nextjs` |
 | Astro site | `universal` + `typescript-web` + `astro` |
+| Python CLI | `universal` + `python` |
 
 ## Config
 
@@ -81,9 +83,9 @@ uv run cpc update /path/to/project
 uv run cpc status /path/to/project
 ```
 
-**`install`** -- symlinks rule files into `.claude/rules/` and skill directories into `.claude/skills/`. Prompts for a profile if `--profile` is not given. Writes `.manifest.json` recording the selection.
+**`install`** -- symlinks rule files into `.claude/rules/` and skill directories into `.claude/skills/`. Prompts for a profile if `--profile` is not given. Writes `.cpc.manifest.json` recording the selection.
 
-**`update`** -- reads `.manifest.json` from a previous install, runs any source `update` commands (e.g. `git pull`), then re-applies the same profile. Use this to pick up new or changed rules and skills without re-selecting.
+**`update`** -- reads `.cpc.manifest.json` from a previous install, runs any source `update` commands (e.g. `git pull`), then re-applies the same profile. Use this to pick up new or changed rules and skills without re-selecting.
 
 **`status`** -- prints the installed profile, rule sets, skills, and checks symlink health. Reports any broken symlinks.
 
