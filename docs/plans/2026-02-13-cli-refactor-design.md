@@ -156,6 +156,124 @@ uv run cpc status /path/to/project
 
 Entry point: `[project.scripts] cpc = "cpc.cli:main"`
 
+## Type model
+
+All data structures use modern Python typing (3.11+). No `Any`, no untyped
+dicts flowing through the system.
+
+### Core types (`config.py`)
+
+```python
+from dataclasses import dataclass, field
+from enum import StrEnum
+from pathlib import Path
+
+
+class RuleSet(StrEnum):
+    """Available rule set names, matching rules/ subdirectories."""
+    UNIVERSAL = "universal"
+    TYPESCRIPT_WEB = "typescript-web"
+    ASTRO = "astro"
+    NEXTJS = "nextjs"
+    JAVA_SPRING = "java-spring"
+
+
+@dataclass(frozen=True)
+class SkillSource:
+    """A directory that contains skills."""
+    path: Path
+    update: str | None = None
+
+
+@dataclass(frozen=True)
+class Profile:
+    """A named combination of rule sets and skills for a project type."""
+    name: str
+    rules: list[RuleSet]
+    skills: list[str]
+
+
+@dataclass(frozen=True)
+class Config:
+    """Top-level config parsed from config.yaml."""
+    skill_sources: list[SkillSource]
+    profiles: dict[str, Profile]
+
+
+@dataclass(frozen=True)
+class Manifest:
+    """Recorded state of an installation, written to .manifest.json."""
+    source: Path
+    profile: str
+    rules: list[RuleSet]
+    skills: list[str]
+    installed: str
+```
+
+### Linker result types (`linker.py`)
+
+```python
+class LinkAction(StrEnum):
+    """What happened to a single file during install."""
+    LINKED = "linked"
+    UPDATED = "updated"
+    SKIPPED = "skipped"
+    CLEANED = "cleaned"
+
+
+@dataclass(frozen=True)
+class LinkResult:
+    """Outcome for a single file."""
+    filename: str
+    action: LinkAction
+    target: Path | None = None  # symlink target, None for cleaned
+
+
+@dataclass(frozen=True)
+class InstallResult:
+    """Full outcome of an install or update operation."""
+    target_dir: Path
+    profile: str
+    results: list[LinkResult]
+
+    @property
+    def linked(self) -> list[LinkResult]:
+        return [r for r in self.results if r.action == LinkAction.LINKED]
+
+    @property
+    def updated(self) -> list[LinkResult]:
+        return [r for r in self.results if r.action == LinkAction.UPDATED]
+
+    @property
+    def skipped(self) -> list[LinkResult]:
+        return [r for r in self.results if r.action == LinkAction.SKIPPED]
+
+    @property
+    def cleaned(self) -> list[LinkResult]:
+        return [r for r in self.results if r.action == LinkAction.CLEANED]
+```
+
+### Typing conventions
+
+- `frozen=True` on all dataclasses — config and results are immutable
+- `StrEnum` for closed sets of string values — IDE autocomplete, exhaustive matching
+- `Path` not `str` for all filesystem paths
+- `str | None` union syntax (3.10+), not `Optional[str]`
+- No `TypedDict` — dataclasses are more explicit and support methods
+- Functions declare return types; `linker.py` functions return `InstallResult`,
+  not raw dicts or tuples
+
+### RuleSet enum maintenance
+
+`RuleSet` is the one type that must stay in sync with the `rules/`
+directory. When a new rule set directory is added, add a corresponding
+enum member. This is intentional friction — it forces you to acknowledge
+the new set in the type system rather than silently discovering it.
+
+If this proves too rigid (e.g., users want to add rule sets without
+touching Python), it can be relaxed to a validated `str` with runtime
+checks against the filesystem. Start strict, loosen if needed.
+
 ## Test strategy
 
 Focus on `linker.py` — the only module that touches the filesystem
