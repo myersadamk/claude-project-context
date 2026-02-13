@@ -8,16 +8,21 @@ from pathlib import Path
 
 import pytest
 
+from cpc.config import RuleSet
+
+UNIVERSAL = RuleSet("universal")
+TYPESCRIPT_WEB = RuleSet("typescript-web")
+
 
 def _create_source_rules(tmp_path: Path) -> Path:
     """Create a fake rules/ directory with two sets."""
     rules = tmp_path / "rules"
-    universal = rules / "universal"
+    universal = rules / UNIVERSAL
     universal.mkdir(parents=True)
     (universal / "universal-review.md").write_text("# Review")
     (universal / "universal-security.md").write_text("# Security")
 
-    ts = rules / "typescript-web"
+    ts = rules / TYPESCRIPT_WEB
     ts.mkdir(parents=True)
     (ts / "typescript-web-types.md").write_text("# Types")
     return rules
@@ -57,7 +62,7 @@ class TestSafetyInvariants:
 
         install_profile(
             target=target,
-            rule_sets=["universal"],
+            rule_sets=[UNIVERSAL],
             skill_dirs=[],
             rules_dir=rules_dir,
         )
@@ -81,7 +86,7 @@ class TestSafetyInvariants:
 
         install_profile(
             target=target,
-            rule_sets=["universal"],
+            rule_sets=[UNIVERSAL],
             skill_dirs=[],
             rules_dir=rules_dir,
         )
@@ -107,7 +112,7 @@ class TestSafetyInvariants:
 
         install_profile(
             target=target,
-            rule_sets=["universal"],
+            rule_sets=[UNIVERSAL],
             skill_dirs=[],
             rules_dir=rules_dir,
         )
@@ -131,7 +136,7 @@ class TestSafetyInvariants:
 
         install_profile(
             target=target,
-            rule_sets=["universal", "typescript-web"],
+            rule_sets=[UNIVERSAL, TYPESCRIPT_WEB],
             skill_dirs=[(skills_dir / "vibesec")],
             rules_dir=rules_dir,
         )
@@ -153,7 +158,7 @@ class TestCorrectBehavior:
 
         result = install_profile(
             target=target,
-            rule_sets=["universal"],
+            rule_sets=[UNIVERSAL],
             skill_dirs=[],
             rules_dir=rules_dir,
         )
@@ -191,11 +196,11 @@ class TestCorrectBehavior:
 
         # Install twice
         install_profile(
-            target=target, rule_sets=["universal"],
+            target=target, rule_sets=[UNIVERSAL],
             skill_dirs=[], rules_dir=rules_dir,
         )
         result = install_profile(
-            target=target, rule_sets=["universal"],
+            target=target, rule_sets=[UNIVERSAL],
             skill_dirs=[], rules_dir=rules_dir,
         )
 
@@ -211,14 +216,14 @@ class TestCorrectBehavior:
         # Install universal + typescript-web
         install_profile(
             target=target,
-            rule_sets=["universal", "typescript-web"],
+            rule_sets=[UNIVERSAL, TYPESCRIPT_WEB],
             skill_dirs=[], rules_dir=rules_dir,
         )
 
         # Re-install with only universal — typescript-web links should be cleaned
         result = install_profile(
             target=target,
-            rule_sets=["universal"],
+            rule_sets=[UNIVERSAL],
             skill_dirs=[], rules_dir=rules_dir,
         )
 
@@ -232,7 +237,7 @@ class TestCorrectBehavior:
         rules_dir = _create_source_rules(tmp_path)
         target = _create_target(tmp_path)
 
-        sets = ["universal", "typescript-web"]
+        sets = [UNIVERSAL, TYPESCRIPT_WEB]
 
         result1 = install_profile(
             target=target, rule_sets=sets,

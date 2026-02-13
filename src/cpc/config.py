@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import NewType
 
 import click
 import yaml
@@ -29,12 +30,15 @@ RULES_DIR = REPO_ROOT / "rules"
 
 # ── Types ──────────────────────────────────────────────────────────
 
+RuleSet = NewType("RuleSet", str)
+"""A validated rule set name corresponding to a rules/ subdirectory."""
 
-def available_rule_sets(*, rules_dir: Path = RULES_DIR) -> list[str]:
+
+def available_rule_sets(*, rules_dir: Path = RULES_DIR) -> list[RuleSet]:
     """Discover available rule sets from the rules/ directory."""
     if not rules_dir.is_dir():
         return []
-    return sorted(d.name for d in rules_dir.iterdir() if d.is_dir())
+    return sorted(RuleSet(d.name) for d in rules_dir.iterdir() if d.is_dir())
 
 
 @dataclass(frozen=True)
@@ -50,7 +54,7 @@ class Profile:
     """A named combination of rule sets and skills for a project type."""
 
     name: str
-    rules: list[str]
+    rules: list[RuleSet]
     skills: list[str]
 
 
@@ -96,11 +100,11 @@ def load_config(config_path: Path | None = None) -> Config:
     known_sets = set(available_rule_sets())
     profiles: dict[str, Profile] = {}
     for name, data in raw.get("profiles", {}).items():
-        rules: list[str] = []
+        rules: list[RuleSet] = []
         for r in data.get("rules", []):
             if r not in known_sets:
                 print_warning(f"Profile '{name}' references unknown rule set '{r}'.")
-            rules.append(r)
+            rules.append(RuleSet(r))
         skills = data.get("skills", [])
         profiles[name] = Profile(name=name, rules=rules, skills=skills)
 
@@ -152,9 +156,9 @@ def resolve_skill(name: str, sources: list[SkillSource]) -> Path | None:
     return None
 
 
-def discover_rules(rule_sets: list[str], *, rules_dir: Path = RULES_DIR) -> dict[str, list[Path]]:
+def discover_rules(rule_sets: list[RuleSet], *, rules_dir: Path = RULES_DIR) -> dict[RuleSet, list[Path]]:
     """Find all .md files for the given rule sets."""
-    result: dict[str, list[Path]] = {}
+    result: dict[RuleSet, list[Path]] = {}
     for rule_set in rule_sets:
         set_dir = rules_dir / rule_set
         if set_dir.is_dir():

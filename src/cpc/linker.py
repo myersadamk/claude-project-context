@@ -22,6 +22,7 @@ from cpc.config import (
     RULES_DIR,
     Config,
     Profile,
+    RuleSet,
     discover_rules,
     load_config,
     load_manifest,
@@ -170,7 +171,7 @@ def _sync_directory(
 def install_profile(
     *,
     target: Path,
-    rule_sets: list[str],
+    rule_sets: list[RuleSet],
     skill_dirs: list[Path],
     rules_dir: Path = RULES_DIR,
 ) -> InstallResult:

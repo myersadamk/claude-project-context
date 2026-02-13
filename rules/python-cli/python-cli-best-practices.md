@@ -1,15 +1,5 @@
 # Python Best Practices
 
-## Types and Data Structures
-
-- `frozen=True` on all dataclasses — config and results are immutable data, not mutable state
-- `StrEnum` for closed sets of string values — IDE autocomplete, exhaustive matching, serializes as plain string
-- `Path` not `str` for all filesystem paths — type safety, no ambiguity about what a string represents
-- `str | None` union syntax (3.10+), not `Optional[str]`
-- No `Any` — if the type is genuinely unknown, use `unknown` patterns (validate and narrow)
-- No untyped dicts flowing between functions — define a dataclass or `TypedDict`
-- Explicit return types on all functions
-
 ## Function Signatures
 
 - Keyword-only arguments (`*`) for functions with 3+ parameters of similar types
@@ -65,11 +55,6 @@
 
 | Pattern | Why | Use Instead |
 | --- | --- | --- |
-| `Any` | Disables type checking | Specific types or `unknown` + narrowing |
-| `dict` as a data structure between functions | No type safety, no IDE support | `dataclass` or `TypedDict` |
-| `str` for file paths | Ambiguous, no path operations | `Path` |
-| `Optional[X]` | Verbose, old syntax | `X \| None` |
-| `isinstance` chains | Fragile, not exhaustive | `match` statement or `StrEnum` |
 | String matching for path checks | Breaks on similar prefixes | `Path.relative_to()` |
 | `sys.exit()` in library code | Untestable | `raise SystemExit` or return error types |
-| Mutable default arguments | Shared state between calls | `field(default_factory=list)` or `None` sentinel |
+| Bare `except:` or `except Exception:` | Swallows bugs | Specific exception types |
