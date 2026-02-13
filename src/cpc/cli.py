@@ -51,8 +51,8 @@ def init(bin_dir: Path) -> None:
         dest.symlink_to(rel_path)
     except PermissionError:
         print_error(f"Permission denied writing to {bin_dir}.")
-        console.print(f"  Run: [label]sudo uv run cpc init[/]")
-        console.print(f"  Or:  [label]uv run cpc init --bin-dir ~/.local/bin[/]")
+        console.print(f"  Run: [label]sudo cpc init[/]")
+        console.print(f"  Or:  [label]cpc init --bin-dir ~/.local/bin[/]")
         raise SystemExit(1)
     console.print(f"[success]Linked:[/] {dest} -> {WRAPPER_PATH}")
     console.print("\nYou can now run [label]cpc[/] from anywhere.")
