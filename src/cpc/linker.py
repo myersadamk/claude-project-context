@@ -82,6 +82,89 @@ class InstallResult:
         return [r for r in self.results if r.action == LinkAction.CLEANED]
 
 
+# -- Symlink helpers ---------------------------------------------------------
+
+
+def _is_owned_by(symlink: Path, owned_parents: set[Path]) -> bool:
+    """Check if a symlink's target lives under one of our owned directories."""
+    resolved = symlink.resolve()
+    for parent in owned_parents:
+        try:
+            resolved.relative_to(parent)
+            return True
+        except ValueError:
+            continue
+    return False
+
+
+def _clean_stale_symlinks(
+    *,
+    directory: Path,
+    expected_names: set[str],
+    owned_parents: set[Path],
+    results: list[LinkResult],
+) -> None:
+    """Remove symlinks we own that are no longer in the expected set.
+
+    SAFETY: Only removes symlinks whose targets resolve under owned_parents.
+    Non-symlinks and foreign symlinks are never touched.
+    """
+    for entry in sorted(directory.iterdir()):
+        if not entry.is_symlink():
+            continue
+        if entry.name in expected_names:
+            continue
+        if _is_owned_by(entry, owned_parents):
+            entry.unlink()
+            results.append(LinkResult(entry.name, LinkAction.CLEANED))
+
+
+def _link_items(
+    *,
+    sources: list[Path],
+    dest_dir: Path,
+    results: list[LinkResult],
+) -> None:
+    """Create or update symlinks for each source into dest_dir.
+
+    SAFETY: is_symlink() is checked before exists() — a non-symlink file
+    is never overwritten (local overrides are sacred).
+    """
+    for source in sources:
+        dest = dest_dir / source.name
+
+        if dest.is_symlink():
+            dest.unlink()
+            rel_path = os.path.relpath(source, dest.parent)
+            dest.symlink_to(rel_path)
+            results.append(LinkResult(source.name, LinkAction.UPDATED, source))
+        elif dest.exists():
+            results.append(LinkResult(source.name, LinkAction.SKIPPED, source))
+        else:
+            rel_path = os.path.relpath(source, dest.parent)
+            dest.symlink_to(rel_path)
+            results.append(LinkResult(source.name, LinkAction.LINKED, source))
+
+
+def _sync_directory(
+    *,
+    dest_dir: Path,
+    sources: list[Path],
+    owned_parents: set[Path],
+    results: list[LinkResult],
+) -> None:
+    """Clean stale symlinks then install/update symlinks in a single directory."""
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    expected_names = {s.name for s in sources}
+    _clean_stale_symlinks(
+        directory=dest_dir,
+        expected_names=expected_names,
+        owned_parents=owned_parents,
+        results=results,
+    )
+    _link_items(sources=sources, dest_dir=dest_dir, results=results)
+
+
 # -- Core function -----------------------------------------------------------
 
 
@@ -100,135 +183,25 @@ def install_profile(
     """
     results: list[LinkResult] = []
 
-    # 1. Create .claude/rules/ in target if needed
-    claude_rules = target / ".claude" / "rules"
-    claude_rules.mkdir(parents=True, exist_ok=True)
-
-    # 2. Discover rule .md files for the given rule sets
     discovered = discover_rules(rule_sets, rules_dir=rules_dir)
+    all_rule_files = [f for files in discovered.values() for f in files]
 
-    # Build set of expected rule filenames
-    expected_files: set[str] = set()
-    all_rule_files: list[Path] = []
-    for rule_set, files in discovered.items():
-        for f in files:
-            expected_files.add(f.name)
-            all_rule_files.append(f)
+    _sync_directory(
+        dest_dir=target / ".claude" / "rules",
+        sources=all_rule_files,
+        owned_parents={rules_dir.resolve()},
+        results=results,
+    )
 
-    # 3. Clean stale rule symlinks
-    resolved_rules_dir = rules_dir.resolve()
-    for entry in sorted(claude_rules.iterdir()):
-        # SAFETY: is_symlink() check MUST come first
-        if not entry.is_symlink():
-            continue
-
-        # Resolve the symlink target to check if it belongs to us
-        resolved_target = entry.resolve()
-        try:
-            resolved_target.relative_to(resolved_rules_dir)
-            is_ours = True
-        except ValueError:
-            is_ours = False
-
-        if is_ours and entry.name not in expected_files:
-            # Stale symlink that points into our rules_dir but is no longer needed
-            entry.unlink()
-            results.append(LinkResult(
-                filename=entry.name,
-                action=LinkAction.CLEANED,
-            ))
-        # If not ours: leave it alone (foreign symlink)
-
-    # 4. Install rule symlinks
-    for rule_file in all_rule_files:
-        dest = claude_rules / rule_file.name
-
-        # SAFETY: is_symlink() MUST be checked before exists()
-        if dest.is_symlink():
-            # Replace existing symlink (UPDATED)
-            dest.unlink()
-            rel_path = os.path.relpath(rule_file, dest.parent)
-            dest.symlink_to(rel_path)
-            results.append(LinkResult(
-                filename=rule_file.name,
-                action=LinkAction.UPDATED,
-                target=rule_file,
-            ))
-        elif dest.exists():
-            # Non-symlink file exists — skip (local override, NEVER overwrite)
-            results.append(LinkResult(
-                filename=rule_file.name,
-                action=LinkAction.SKIPPED,
-                target=rule_file,
-            ))
-        else:
-            # Create new symlink (LINKED)
-            rel_path = os.path.relpath(rule_file, dest.parent)
-            dest.symlink_to(rel_path)
-            results.append(LinkResult(
-                filename=rule_file.name,
-                action=LinkAction.LINKED,
-                target=rule_file,
-            ))
-
-    # 5. If skill_dirs is non-empty, create .claude/skills/ and symlink each
     if skill_dirs:
-        claude_skills = target / ".claude" / "skills"
-        claude_skills.mkdir(parents=True, exist_ok=True)
+        _sync_directory(
+            dest_dir=target / ".claude" / "skills",
+            sources=skill_dirs,
+            owned_parents={sd.parent.resolve() for sd in skill_dirs},
+            results=results,
+        )
 
-        # 5a. Clean stale skill symlinks
-        expected_skill_names = {sd.name for sd in skill_dirs}
-        skill_source_parents = {sd.parent.resolve() for sd in skill_dirs}
-
-        for existing in claude_skills.iterdir():
-            if not existing.is_symlink():
-                continue
-            if existing.name in expected_skill_names:
-                continue
-            # Check if this symlink points into one of our skill sources
-            try:
-                resolved = existing.resolve()
-                for parent in skill_source_parents:
-                    resolved.relative_to(parent)
-                    # It's ours and stale — clean it
-                    existing.unlink()
-                    results.append(LinkResult(existing.name, LinkAction.CLEANED))
-                    break
-            except ValueError:
-                continue  # Foreign symlink, leave it alone
-
-        for skill_dir in skill_dirs:
-            dest = claude_skills / skill_dir.name
-
-            # SAFETY: is_symlink() MUST be checked before exists()
-            if dest.is_symlink():
-                dest.unlink()
-                rel_path = os.path.relpath(skill_dir, dest.parent)
-                dest.symlink_to(rel_path)
-                results.append(LinkResult(
-                    filename=skill_dir.name,
-                    action=LinkAction.UPDATED,
-                    target=skill_dir,
-                ))
-            elif dest.exists():
-                # Non-symlink — skip
-                results.append(LinkResult(
-                    filename=skill_dir.name,
-                    action=LinkAction.SKIPPED,
-                    target=skill_dir,
-                ))
-            else:
-                rel_path = os.path.relpath(skill_dir, dest.parent)
-                dest.symlink_to(rel_path)
-                results.append(LinkResult(
-                    filename=skill_dir.name,
-                    action=LinkAction.LINKED,
-                    target=skill_dir,
-                ))
-
-    # 6. Build profile name from rule sets for InstallResult
     profile_name = "+".join(rs.value for rs in rule_sets) if rule_sets else "custom"
-
     return InstallResult(
         target_dir=target,
         profile=profile_name,

@@ -18,7 +18,7 @@ Rules and skills live here as markdown files organized by technology stack. The 
 
 | Set | Files | Purpose |
 | --- | --- | --- |
-| `universal` | `universal-review.md`, `universal-security.md` | Quality gate, security baseline |
+| `universal` | `universal-review.md`, `universal-security.md`, `universal-code-structure.md` | Quality gate, security baseline, readability |
 | `typescript-web` | `typescript-web-types.md`, `typescript-web-tailwind.md`, `typescript-web-ui.md`, `typescript-web-best-practices.md` | TypeScript + Tailwind web projects |
 | `astro` | `astro-framework.md`, `astro-testing.md` | Astro-specific patterns |
 | `nextjs` | `nextjs-architecture.md`, `nextjs-mdx.md` | Next.js App Router + MDX |
