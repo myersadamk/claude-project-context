@@ -38,7 +38,6 @@ class RuleSet(StrEnum):
     TYPESCRIPT_WEB = "typescript-web"
     ASTRO = "astro"
     NEXTJS = "nextjs"
-    PYTHON = "python"
     PYTHON_CLI = "python-cli"
 
 

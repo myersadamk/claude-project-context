@@ -22,8 +22,7 @@ Rules and skills live here as markdown files organized by technology stack. The 
 | `typescript-web` | `typescript-web-types.md`, `typescript-web-tailwind.md`, `typescript-web-ui.md`, `typescript-web-best-practices.md` | TypeScript + Tailwind web projects |
 | `astro` | `astro-framework.md`, `astro-testing.md` | Astro-specific patterns |
 | `nextjs` | `nextjs-architecture.md`, `nextjs-mdx.md` | Next.js App Router + MDX |
-| `python` | `python-best-practices.md` | Python types, naming, filesystem safety |
-| `python-cli` | `python-cli-click.md` | click CLI patterns, help text, output |
+| `python-cli` | `python-cli-best-practices.md`, `python-cli-click.md` | Python CLI projects (uv, click, rich) |
 
 ### Composable combinations
 
@@ -31,8 +30,7 @@ Rules and skills live here as markdown files organized by technology stack. The 
 | --- | --- |
 | Next.js site | `universal` + `typescript-web` + `nextjs` |
 | Astro site | `universal` + `typescript-web` + `astro` |
-| Python CLI | `universal` + `python` + `python-cli` |
-| Python library | `universal` + `python` |
+| Python CLI | `universal` + `python-cli` |
 
 ## Config
 
