@@ -271,16 +271,19 @@ def _print_result(result: InstallResult) -> None:
 
 @click.command()
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
-@click.option("--profile", "profile_name", default=None, help="Profile name (non-interactive).")
+@click.option(
+    "--profile",
+    "profile_name",
+    default=None,
+    type=click.Choice(list(load_config().profiles.keys()), case_sensitive=False),
+    help="Profile to install (omit for interactive selection).",
+)
 def install(target: Path, profile_name: str | None) -> None:
     """Install rules and skills into a project."""
     target = target.resolve()
     config = load_config()
 
     if profile_name is not None:
-        if profile_name not in config.profiles:
-            print_error(f"Profile '{profile_name}' not found in config.")
-            raise SystemExit(1)
         profile = config.profiles[profile_name]
     else:
         profile = _select_profile(config)
