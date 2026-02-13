@@ -34,6 +34,10 @@ def print_cleaned(filename: str) -> None:
     console.print(f"  [error]-[/] {filename}")
 
 
+def print_warning(message: str) -> None:
+    console.print(f"  [warning]![/] {message}")
+
+
 def print_error(message: str) -> None:
     console.print(f"[error]Error:[/] {message}", style="error")
 

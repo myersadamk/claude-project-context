@@ -38,6 +38,7 @@ from cpc.console import (
     print_rule,
     print_skipped,
     print_updated,
+    print_warning,
 )
 
 
@@ -316,9 +317,9 @@ def install(target: Path, profile_name: str | None) -> None:
     for skill_name in profile.skills:
         skill_path = resolve_skill(skill_name, config.skill_sources)
         if skill_path is None:
-            print_error(f"Skill '{skill_name}' not found in any source.")
-            raise SystemExit(1)
-        skill_dirs.append(skill_path)
+            print_warning(f"Skill '{skill_name}' not found in any source.")
+        else:
+            skill_dirs.append(skill_path)
 
     result = install_profile(
         target=target,
