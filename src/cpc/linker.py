@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import os
 import subprocess
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 
@@ -175,6 +175,27 @@ def install_profile(
         claude_skills = target / ".claude" / "skills"
         claude_skills.mkdir(parents=True, exist_ok=True)
 
+        # 5a. Clean stale skill symlinks
+        expected_skill_names = {sd.name for sd in skill_dirs}
+        skill_source_parents = {sd.parent.resolve() for sd in skill_dirs}
+
+        for existing in claude_skills.iterdir():
+            if not existing.is_symlink():
+                continue
+            if existing.name in expected_skill_names:
+                continue
+            # Check if this symlink points into one of our skill sources
+            try:
+                resolved = existing.resolve()
+                for parent in skill_source_parents:
+                    resolved.relative_to(parent)
+                    # It's ours and stale — clean it
+                    existing.unlink()
+                    results.append(LinkResult(existing.name, LinkAction.CLEANED))
+                    break
+            except ValueError:
+                continue  # Foreign symlink, leave it alone
+
         for skill_dir in skill_dirs:
             dest = claude_skills / skill_dir.name
 
@@ -332,13 +353,18 @@ def update(target: Path) -> None:
     for source in config.skill_sources:
         if source.update and source.path.is_dir():
             console.print(f"  Updating {source.path.name}...")
-            subprocess.run(
+            proc = subprocess.run(
                 source.update,
                 shell=True,
                 cwd=source.path,
                 check=False,
                 capture_output=True,
+                text=True,
             )
+            if proc.returncode != 0:
+                console.print(f"  [warning]Update failed (exit {proc.returncode})[/]")
+                if proc.stderr:
+                    console.print(f"  [warning]{proc.stderr.strip()}[/]")
 
     # Resolve skill directories
     skill_dirs: list[Path] = []
