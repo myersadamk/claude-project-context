@@ -12,6 +12,7 @@ profiles:
       - astro
     skills:
       - vibesec
+      - interface-design
 
   nextjs-web:
     rules:
@@ -20,6 +21,7 @@ profiles:
       - nextjs
     skills:
       - vibesec
+      - interface-design
   python-cli:
     rules:
       - universal

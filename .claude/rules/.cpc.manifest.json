@@ -1,0 +1,10 @@
+{
+  "source": "/Users/koi/Repositories/myersadamk/claude-project-context",
+  "profile": "python-cli",
+  "rules": [
+    "universal",
+    "python-cli"
+  ],
+  "skills": [],
+  "installed": "2026-02-13"
+}
