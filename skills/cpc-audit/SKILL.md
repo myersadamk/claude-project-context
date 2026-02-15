@@ -19,7 +19,7 @@ Rules loaded at conversation start drift out of context during long sessions. Th
 
 Read **every** `.md` file in `.claude/rules/`. This forces the full rule set back into context.
 
-Skip non-rule files (`.cpc.manifest.json`, etc.).
+Skip non-rule files (e.g. dotfiles).
 
 List what was loaded:
 ```

@@ -113,9 +113,14 @@ def load_config(config_path: Path | None = None) -> Config:
 
 def load_manifest(target: Path) -> Manifest | None:
     """Load .cpc.manifest.json from a target project."""
-    manifest_path = target / ".claude" / "rules" / MANIFEST_NAME
+    manifest_path = target / ".claude" / MANIFEST_NAME
+    # Fall back to legacy location for already-linked projects
     if not manifest_path.exists():
-        return None
+        legacy_path = target / ".claude" / "rules" / MANIFEST_NAME
+        if legacy_path.exists():
+            manifest_path = legacy_path
+        else:
+            return None
     with open(manifest_path) as f:
         raw = json.load(f)
     return Manifest(
@@ -129,7 +134,11 @@ def load_manifest(target: Path) -> Manifest | None:
 
 def save_manifest(target: Path, profile: Profile) -> None:
     """Write .cpc.manifest.json to the target project."""
-    manifest_path = target / ".claude" / "rules" / MANIFEST_NAME
+    manifest_path = target / ".claude" / MANIFEST_NAME
+    # Clean up legacy location if it exists
+    legacy_path = target / ".claude" / "rules" / MANIFEST_NAME
+    if legacy_path.exists():
+        legacy_path.unlink()
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     data = {
         "source": str(REPO_ROOT),
