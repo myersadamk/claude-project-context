@@ -10,6 +10,10 @@ npm run lint && npm run typecheck && npm run format:check && npm run test && npm
 
 Skip `build` only for documentation-only changes. All others MUST pass.
 
+### Fixing formatting failures
+
+If `format:check` fails, run `npm run format` to auto-fix, then re-stage the changed files.
+
 ## Checklist
 
 ### TypeScript (-> typescript-web-types.md)
