@@ -1,4 +1,4 @@
-# TypeScript Web — Review
+# TypeScript Web — Review Checklist
 
 ## Verification Commands
 
@@ -8,7 +8,7 @@ All MUST pass before approval:
 npm run lint && npm run typecheck && npm run format:check && npm run test && npm run build
 ```
 
-Skip `build` only for documentation-only changes.
+Skip `build` only for documentation-only changes. All others MUST pass.
 
 ## Checklist
 
@@ -40,3 +40,7 @@ Skip `build` only for documentation-only changes.
 - [ ] Typography matches defined families and scale
 - [ ] Motion uses design-system duration and easing tokens
 - [ ] Skip if design-system.md is not yet populated
+
+### Framework-Specific
+
+- [ ] Review against the active framework rules (astro-framework.md, nextjs-architecture.md, etc.)

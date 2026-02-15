@@ -2,10 +2,11 @@
 
 ## Quality Gate
 
-Before reviewing:
-1. Load all files in `.claude/rules/`
-2. Identify the stack-specific `*-review.md` file (e.g., `typescript-web-review.md`, `python-cli-review.md`)
-3. Run the verification commands defined in that file
+Before reviewing, load all files in `.claude/rules/`.
+
+## Verification Commands
+
+Run the verification commands from your stack's review rule (e.g., `python-cli-review.md`, `typescript-web-review.md`). All MUST pass before approval.
 
 ## Checklist
 
@@ -14,7 +15,7 @@ Before reviewing:
 - [ ] Code does what it's supposed to do
 - [ ] Logic handles edge cases and error states
 - [ ] No dead code or unused imports
-- [ ] No debugging artifacts left in production code
+- [ ] No debug logging left in production code
 
 ### Security (-> universal-security.md)
 
@@ -24,11 +25,10 @@ Before reviewing:
 
 ### Code Structure (-> universal-code-structure.md)
 
-- [ ] Functions under 50 lines (hard ceiling: 100)
+- [ ] Functions under 100 lines, aim for ~50
 - [ ] Maximum 3 levels of nesting
 - [ ] Early returns for preconditions
 - [ ] Consistent abstraction level within each function
-- [ ] No duplicated blocks with minor variations
 
 ### Testing
 

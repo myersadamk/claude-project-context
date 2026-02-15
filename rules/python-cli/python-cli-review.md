@@ -1,4 +1,4 @@
-# Python CLI — Review
+# Python CLI — Review Checklist
 
 ## Verification Commands
 
@@ -10,25 +10,28 @@ uv run pytest
 
 ## Checklist
 
-### CLI Patterns (-> python-cli-click.md)
+### Python Quality (-> python-cli-best-practices.md)
+
+- [ ] Keyword-only arguments for functions with 3+ similar-typed parameters
+- [ ] `Path` parameters, not `str`
+- [ ] `raise SystemExit(1)`, not `sys.exit()`
+- [ ] Specific exceptions, no bare `except:` or `except Exception:`
+
+### CLI (-> python-cli-click.md)
 
 - [ ] Click commands are thin — logic extracted into plain functions
-- [ ] `click.Choice` for closed option sets, not manual validation
-- [ ] `click.Path(path_type=Path)` on all path parameters
-- [ ] `raise SystemExit(1)` for errors, not `sys.exit()`
-- [ ] `rich` for output, not raw `print()`
+- [ ] `click.Choice` for closed sets, `click.Path(path_type=Path)` for paths
+- [ ] `help=` on every option
+- [ ] Non-interactive alternative for every interactive prompt
 
-### Typing (-> python-cli-typing.md)
+### Types (-> python-cli-typing.md)
 
-- [ ] `NewType` for validated domain strings
-- [ ] `@dataclass(frozen=True)` for structured data, no untyped dicts
-- [ ] `Path` not `str` for filesystem values
-- [ ] Explicit return types on all functions
-- [ ] No `Any`
+- [ ] No `Any` or `cast()` without justification
+- [ ] Dataclasses or `TypedDict` for structured data, not raw dicts
+- [ ] `NewType` for domain identifiers
 
-### Best Practices (-> python-cli-best-practices.md)
+### Filesystem Safety
 
-- [ ] Keyword-only args for functions with 3+ similar-typed parameters
-- [ ] `relative_to()` for path ancestry checks, never string matching
+- [ ] `relative_to()` with `try/except ValueError` for path ancestry — no string matching
 - [ ] `is_symlink()` before `exists()` when handling symlinks
-- [ ] Tests use real filesystem (`tmp_path`), no mocking
+- [ ] Never `unlink()` without verifying `is_symlink()` first
