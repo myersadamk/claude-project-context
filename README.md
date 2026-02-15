@@ -18,19 +18,21 @@ Rules and skills live here as markdown files organized by technology stack. The 
 
 | Set | Files | Purpose |
 | --- | --- | --- |
-| `universal` | `universal-review.md`, `universal-security.md`, `universal-code-structure.md` | Quality gate, security baseline, readability |
+| `universal-coding` | `universal-coding-review.md`, `universal-coding-security.md`, `universal-coding-code-structure.md` | Quality gate, security baseline, readability |
 | `typescript-web` | `typescript-web-types.md`, `typescript-web-tailwind.md`, `typescript-web-ui.md`, `typescript-web-best-practices.md`, `typescript-web-review.md` | TypeScript + Tailwind web projects |
-| `astro` | `astro-framework.md`, `astro-testing.md` | Astro-specific patterns |
-| `nextjs` | `nextjs-architecture.md`, `nextjs-mdx.md` | Next.js App Router + MDX |
+| `astro-web` | `astro-web-framework.md`, `astro-web-testing.md` | Astro-specific patterns |
+| `nextjs-web` | `nextjs-web-architecture.md`, `nextjs-web-mdx.md` | Next.js App Router + MDX |
 | `python-cli` | `python-cli-best-practices.md`, `python-cli-click.md`, `python-cli-typing.md`, `python-cli-review.md` | Python CLI projects (uv, click, rich) |
+
+Each stack that has verification commands includes a `*-review.md` file. These contain the stack-specific verification gate and checklist. The universal review rule references them instead of hardcoding commands.
 
 ### Composable combinations
 
 | Project type | Sets |
 | --- | --- |
-| Next.js site | `universal` + `typescript-web` + `nextjs` |
-| Astro site | `universal` + `typescript-web` + `astro` |
-| Python CLI | `universal` + `python-cli` |
+| Next.js site | `universal-coding` + `typescript-web` + `nextjs-web` |
+| Astro site | `universal-coding` + `typescript-web` + `astro-web` |
+| Python CLI | `universal-coding` + `python-cli` |
 
 ## Config
 
@@ -46,19 +48,21 @@ sources:
 profiles:
   astro-web:
     rules:
-      - universal
+      - universal-coding
       - typescript-web
-      - astro
+      - astro-web
     skills:
       - vibesec
+      - cpc-init
+      - cpc-audit
 
-  nextjs-web:
+  python-cli:
     rules:
-      - universal
-      - typescript-web
-      - nextjs
+      - universal-coding
+      - python-cli
     skills:
-      - vibesec
+      - cpc-init
+      - cpc-audit
 ```
 
 **`sources.skills`** -- list of directories to search for skills. Each entry has a `path` (relative to the repo root or absolute) and an optional `update` command that runs during `cpc update` to refresh the source (e.g. `git pull`).
@@ -98,14 +102,27 @@ The installer:
 
 ## Verification gate
 
-Each rule set defines its own verification commands in a `*-review.md` file:
+Each stack defines its own verification commands in its `*-review.md` file:
 
-| Rule set | Review file | Commands |
+| Stack | Command | Review file |
 | --- | --- | --- |
-| `typescript-web` | `typescript-web-review.md` | `npm run lint && npm run typecheck && npm run format:check && npm run test && npm run build` |
-| `python-cli` | `python-cli-review.md` | `uv run pytest` |
+| `typescript-web` | `npm run lint && npm run typecheck && npm run format:check && npm run test && npm run build` | `typescript-web-review.md` |
+| `python-cli` | `uv run pytest` | `python-cli-review.md` |
 
-Run `/cpc:init` after installing to generate the correct commands in your project's `CLAUDE.md`.
+The universal review rule (`universal-coding-review.md`) contains the stack-agnostic checklist and directs you to run the verification commands from your stack's review file.
+
+## Skills
+
+Skills are Claude Code extensions that provide interactive workflows. They're installed into `target/.claude/skills/` alongside rules.
+
+| Skill | Trigger | Purpose |
+| --- | --- | --- |
+| `cpc-init` | `/cpc-init` | Generate or update `CLAUDE.md` with verification commands and profile metadata from installed rules |
+| `cpc-audit` | `/cpc-audit` | Reload rules into context, audit current `git diff` against them, report findings |
+
+**cpc-init** reads `*-review.md` files to extract verification commands, then writes a managed section in `CLAUDE.md` delimited by `<!-- cpc:start -->` / `<!-- cpc:end -->`. User content outside the delimiters is preserved.
+
+**cpc-audit** forces all rules back into Claude's context (useful in long sessions where rules drift out of the window), then checks staged and unstaged changes for compliance.
 
 ## Adding rules
 
@@ -120,27 +137,6 @@ Run `/cpc:init` after installing to generate the correct commands in your projec
 3. Reference the skill by directory name in a profile's `skills` list in `config.yaml`
 
 To add an external skill source, add an entry to `sources.skills` in `config.yaml` with its path and an optional `update` command.
-
-## Built-in skills
-
-Two skills ship with cpc and are added to every profile:
-
-| Skill | Trigger | Purpose |
-| --- | --- | --- |
-| `cpc:init` | `/cpc:init` | Generate or update `CLAUDE.md` with verification commands and profile metadata from installed rules |
-| `cpc:audit` | `/cpc:audit` | Reload all rules into context and audit recent changes against them |
-
-### cpc:init
-
-Run after `cpc install` or when a project has no `CLAUDE.md`. Reads `*-review.md` files from `.claude/rules/` to extract verification commands, then generates a managed section in `CLAUDE.md` delimited by `<!-- cpc:start -->` / `<!-- cpc:end -->` markers.
-
-### cpc:audit
-
-Run before a PR or when rules have drifted out of context during a long session. Re-reads every rule file in `.claude/rules/`, diffs recent changes, and reports a compliance checklist with specific file:line references.
-
-### Review file convention
-
-Each rule set can include a `*-review.md` file with stack-specific verification commands and a review checklist. These are what `cpc:init` reads to generate `CLAUDE.md` and what `cpc:audit` uses for compliance checking.
 
 ## Local overrides
 

@@ -19,7 +19,7 @@ The `--help` output is often the first thing users see. Make it count.
 # Good — help shows available profiles and describes behavior
 @click.option(
     "--profile",
-    type=click.Choice(["astro", "nextjs", "python"]),
+    type=click.Choice(["astro-web", "nextjs-web", "python-cli"]),
     help="Profile to install (omit for interactive selection).",
 )
 

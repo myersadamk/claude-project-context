@@ -1,35 +1,34 @@
 sources:
   skills:
     - path: skills/
-    - path: ../claude-skills
-      update: git -C ../claude-skills pull
+    - path: ../../github/claude-skills
+      update: git -C ../../github/claude-skills pull
 
 profiles:
   astro-web:
     rules:
-      - universal
+      - universal-coding
       - typescript-web
-      - astro
+      - astro-web
     skills:
       - vibesec
-      - interface-design
-      - cpc-audit
       - cpc-init
+      - cpc-audit
 
   nextjs-web:
     rules:
-      - universal
+      - universal-coding
       - typescript-web
-      - nextjs
+      - nextjs-web
     skills:
       - vibesec
-      - interface-design
-      - cpc-audit
       - cpc-init
+      - cpc-audit
+
   python-cli:
     rules:
-      - universal
+      - universal-coding
       - python-cli
     skills:
-      - cpc-audit
       - cpc-init
+      - cpc-audit
