@@ -18,6 +18,8 @@ Rules loaded at conversation start drift out of context during long sessions. Th
 
 ### 1. Reload Rules
 
+**Important:** Use the Glob or Read tools to find files in `.claude/rules/`. Do NOT use git commands (`git ls-files`, `git ls-tree`) — rule files are symlinks and may not be tracked by git.
+
 Determine which rules to load based on `$ARGUMENTS`:
 
 **No arguments** — read **every** `.md` file in `.claude/rules/`. This is the default behavior.

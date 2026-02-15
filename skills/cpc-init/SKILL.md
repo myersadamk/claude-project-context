@@ -17,6 +17,8 @@ After `cpc install`, a project has rules in `.claude/rules/` but no `CLAUDE.md` 
 
 ### 1. Discover Installed Review Rules
 
+**Important:** Use the Glob or Read tools to find files in `.claude/rules/`. Do NOT use git commands (`git ls-files`, `git ls-tree`) — rule files are symlinks and may not be tracked by git.
+
 Read all `*-review.md` files from `.claude/rules/` in the current project.
 
 For each review file, extract the verification commands from the fenced code block under `## Verification Commands`. Example:
