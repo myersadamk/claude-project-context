@@ -1,0 +1,1 @@
+../../rules/python-cli/python-cli-typing.md

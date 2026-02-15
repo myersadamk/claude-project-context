@@ -5,6 +5,9 @@
     "universal",
     "python-cli"
   ],
-  "skills": [],
-  "installed": "2026-02-13"
+  "skills": [
+    "cpc-init",
+    "cpc-audit"
+  ],
+  "installed": "2026-02-15"
 }

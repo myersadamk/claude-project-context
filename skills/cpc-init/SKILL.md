@@ -1,13 +1,13 @@
 ---
 name: cpc-init
-description: Use when setting up CLAUDE.md for a project after installing cpc rules. Generates the verification gate and profile metadata section.
+description: Use when setting up CLAUDE.md for a project after installing cpc rules. Generates the verification gate from installed review rules.
 user-invocable: true
 disable-model-invocation: true
 ---
 
 # cpc-init
 
-Generate or update this project's `CLAUDE.md` with the correct verification commands and profile metadata, based on the installed cpc rules.
+Generate or update this project's `CLAUDE.md` with the correct verification commands, based on the installed cpc review rules.
 
 ## Why This Exists
 
@@ -35,18 +35,9 @@ uv run pytest
 
 If multiple review files define commands, collect all of them.
 
-### 2. Read Profile Metadata
+### 2. Generate CLAUDE.md Section
 
-Read `.claude/rules/.cpc.manifest.json` to identify:
-- `profile` — the installed profile name
-- `rules` — the active rule sets
-- `installed` — the install date
-
-If the manifest is missing, warn the user and continue with just the verification commands.
-
-### 3. Generate CLAUDE.md Section
-
-Create or update `CLAUDE.md` at the project root. The managed section is delimited by HTML comments:
+Create or update `CLAUDE.md` at the project root. The managed section is delimited by HTML comments and contains only the verification commands:
 
 ```markdown
 <!-- cpc:start -->
@@ -57,14 +48,10 @@ Run before completing any task:
 \`\`\`bash
 uv run pytest
 \`\`\`
-
-## Profile
-
-Installed by [cpc](https://github.com/myersadamk/claude-project-context) · profile: `python-cli` · rules: universal, python-cli
 <!-- cpc:end -->
 ```
 
-### 4. Preserve User Content
+### 3. Preserve User Content
 
 - If `CLAUDE.md` exists and contains `<!-- cpc:start -->` / `<!-- cpc:end -->`, replace only the content between those delimiters.
 - If `CLAUDE.md` exists but has no delimiters, prepend the managed section above the existing content with a blank line separating them.
