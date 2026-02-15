@@ -2,17 +2,10 @@
 
 ## Quality Gate
 
-Before reviewing, load all files in `.claude/rules/`.
-
-## Verification Commands
-
-All MUST pass before approval:
-
-```bash
-npm run lint && npm run typecheck && npm run format:check && npm run test && npm run build
-```
-
-Skip `build` only for documentation-only changes. All others MUST pass.
+Before reviewing:
+1. Load all files in `.claude/rules/`
+2. Identify the stack-specific `*-review.md` file (e.g., `typescript-web-review.md`, `python-cli-review.md`)
+3. Run the verification commands defined in that file
 
 ## Checklist
 
@@ -21,52 +14,31 @@ Skip `build` only for documentation-only changes. All others MUST pass.
 - [ ] Code does what it's supposed to do
 - [ ] Logic handles edge cases and error states
 - [ ] No dead code or unused imports
-- [ ] No `console.log` left in production code
-
-### TypeScript (-> typescript-web-types.md)
-
-- [ ] No `any`, `as`, `!`, or `@ts-ignore`
-- [ ] Explicit return types on all functions
-- [ ] Proper type narrowing over casting
-- [ ] Props are properly typed
-
-### Accessibility (-> typescript-web-ui.md)
-
-- [ ] Semantic HTML, correct heading hierarchy
-- [ ] Keyboard navigable, visible focus states
-- [ ] ARIA labels on icon-only buttons
-- [ ] WCAG AA contrast minimum
-
-### Tailwind (-> typescript-web-tailwind.md)
-
-- [ ] No `!important`, no unjustified arbitrary values
-- [ ] No hard-coded colors — semantic tokens only
-- [ ] Mobile-first responsive approach
-- [ ] Repeated patterns extracted to components, not CSS classes
+- [ ] No debugging artifacts left in production code
 
 ### Security (-> universal-security.md)
 
 - [ ] No secrets in source
 - [ ] User input sanitized at system boundaries
-- [ ] CSP headers maintained
+- [ ] Security headers maintained
 
-### Design System (-> local design-system.md)
+### Code Structure (-> universal-code-structure.md)
 
-- [ ] Colors use semantic tokens defined in design-system
-- [ ] Spacing follows defined scale
-- [ ] Typography matches defined families and scale
-- [ ] Motion uses design-system duration and easing tokens
-- [ ] Skip if design-system.md is not yet populated
+- [ ] Functions under 50 lines (hard ceiling: 100)
+- [ ] Maximum 3 levels of nesting
+- [ ] Early returns for preconditions
+- [ ] Consistent abstraction level within each function
+- [ ] No duplicated blocks with minor variations
 
 ### Testing
 
-- [ ] New logic has unit tests
-- [ ] New pages/interactions have e2e tests
+- [ ] New logic has tests
 - [ ] All tests pass
+- [ ] Tests verify behavior, not implementation details
 
-### Framework-Specific
+### Stack-Specific
 
-- [ ] Review against the active framework rules (astro-framework.md, nextjs-architecture.md, etc.)
+- [ ] Review against the active stack review rule (`*-review.md`)
 
 ## Exceptions
 

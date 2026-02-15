@@ -13,6 +13,8 @@ profiles:
     skills:
       - vibesec
       - interface-design
+      - cpc-audit
+      - cpc-init
 
   nextjs-web:
     rules:
@@ -22,7 +24,12 @@ profiles:
     skills:
       - vibesec
       - interface-design
+      - cpc-audit
+      - cpc-init
   python-cli:
     rules:
       - universal
       - python-cli
+    skills:
+      - cpc-audit
+      - cpc-init
