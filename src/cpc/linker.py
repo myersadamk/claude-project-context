@@ -266,6 +266,59 @@ def _print_result(result: InstallResult) -> None:
     print_rule()
 
 
+# -- Gitignore management ----------------------------------------------------
+
+_CPC_START = "# cpc:start (managed by cpc — do not edit)"
+_CPC_END = "# cpc:end"
+
+
+def _build_gitignore_section(
+    *,
+    rule_files: list[str],
+    skill_names: list[str],
+) -> str:
+    """Build the cpc-managed .gitignore section."""
+    lines = [_CPC_START]
+    for rule in sorted(rule_files):
+        lines.append(f".claude/rules/{rule}")
+    for skill in sorted(skill_names):
+        lines.append(f".claude/skills/{skill}")
+    lines.append(".claude/.cpc.manifest.json")
+    lines.append(_CPC_END)
+    return "\n".join(lines) + "\n"
+
+
+def update_gitignore(
+    *,
+    target: Path,
+    rule_files: list[str],
+    skill_names: list[str],
+) -> None:
+    """Create or update the cpc-managed section in .gitignore."""
+    gitignore_path = target / ".gitignore"
+    section = _build_gitignore_section(rule_files=rule_files, skill_names=skill_names)
+
+    if not gitignore_path.exists():
+        gitignore_path.write_text(section)
+        return
+
+    content = gitignore_path.read_text()
+
+    if _CPC_START in content and _CPC_END in content:
+        start_idx = content.index(_CPC_START)
+        end_idx = content.index(_CPC_END) + len(_CPC_END)
+        # Consume trailing newline if present
+        if end_idx < len(content) and content[end_idx] == "\n":
+            end_idx += 1
+        content = content[:start_idx] + section + content[end_idx:]
+    else:
+        if not content.endswith("\n"):
+            content += "\n"
+        content += "\n" + section
+
+    gitignore_path.write_text(content)
+
+
 # -- Click commands ----------------------------------------------------------
 
 
@@ -305,6 +358,18 @@ def install(target: Path, profile_name: str | None) -> None:
 
     _print_result(result)
     save_manifest(target, profile)
+    _gitignore_from_profile(target, profile)
+
+
+def _gitignore_from_profile(target: Path, profile: Profile) -> None:
+    """Update .gitignore with the files installed by a profile."""
+    discovered = discover_rules(profile.rules)
+    rule_files = [f.name for files in discovered.values() for f in files]
+    update_gitignore(
+        target=target,
+        rule_files=rule_files,
+        skill_names=profile.skills,
+    )
 
 
 @click.command()
@@ -358,3 +423,4 @@ def update(target: Path) -> None:
 
     _print_result(result)
     save_manifest(target, profile)
+    _gitignore_from_profile(target, profile)

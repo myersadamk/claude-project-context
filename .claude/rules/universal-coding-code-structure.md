@@ -1,1 +1,0 @@
-../../rules/universal-coding/universal-coding-code-structure.md

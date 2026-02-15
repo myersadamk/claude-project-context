@@ -1,1 +1,0 @@
-../../rules/python-cli/python-cli-best-practices.md
