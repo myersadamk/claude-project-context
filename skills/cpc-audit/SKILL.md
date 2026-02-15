@@ -72,16 +72,13 @@ For each relevant rule, report:
 - ✓ Compliant items (brief)
 - ✗ Violations with file and line reference
 
-### 4. Verification Reminder
+### 4. Run Verification Commands
 
-If any `*-review.md` file defines verification commands, remind the user:
+If any `*-review.md` file defines verification commands, run them and report the results.
 
-```
-Verification commands (from python-cli-review.md):
-  uv run pytest
-```
+Extract commands from the fenced code block under `## Verification Commands` in each loaded review file. Run each command and include the output in the audit report.
 
-Do NOT run the commands automatically — the user decides when to run them.
+If a command fails, flag it clearly in the findings.
 
 ## Scoping
 
@@ -110,5 +107,5 @@ Audit the **current diff only**, not the entire repo. This keeps the audit focus
   ✓ Specific exceptions
 
 ### Verification
-  Run: uv run pytest
+  ✓ uv run pytest — 11 passed
 ```
