@@ -18,10 +18,10 @@ Rules and skills live here as markdown files organized by technology stack. The 
 
 | Set | Files | Purpose |
 | --- | --- | --- |
-| `universal` | `universal-review.md`, `universal-security.md`, `universal-code-structure.md` | Quality gate, security baseline, readability |
+| `universal-coding` | `universal-coding-review.md`, `universal-coding-security.md`, `universal-coding-code-structure.md` | Quality gate, security baseline, readability |
 | `typescript-web` | `typescript-web-types.md`, `typescript-web-tailwind.md`, `typescript-web-ui.md`, `typescript-web-best-practices.md`, `typescript-web-review.md` | TypeScript + Tailwind web projects |
-| `astro` | `astro-framework.md`, `astro-testing.md` | Astro-specific patterns |
-| `nextjs` | `nextjs-architecture.md`, `nextjs-mdx.md` | Next.js App Router + MDX |
+| `astro-web` | `astro-web-framework.md`, `astro-web-testing.md` | Astro-specific patterns |
+| `nextjs-web` | `nextjs-web-architecture.md`, `nextjs-web-mdx.md` | Next.js App Router + MDX |
 | `python-cli` | `python-cli-best-practices.md`, `python-cli-click.md`, `python-cli-typing.md`, `python-cli-review.md` | Python CLI projects (uv, click, rich) |
 
 Each stack that has verification commands includes a `*-review.md` file. These contain the stack-specific verification gate and checklist. The universal review rule references them instead of hardcoding commands.
@@ -30,9 +30,9 @@ Each stack that has verification commands includes a `*-review.md` file. These c
 
 | Project type | Sets |
 | --- | --- |
-| Next.js site | `universal` + `typescript-web` + `nextjs` |
-| Astro site | `universal` + `typescript-web` + `astro` |
-| Python CLI | `universal` + `python-cli` |
+| Next.js site | `universal-coding` + `typescript-web` + `nextjs-web` |
+| Astro site | `universal-coding` + `typescript-web` + `astro-web` |
+| Python CLI | `universal-coding` + `python-cli` |
 
 ## Config
 
@@ -48,9 +48,9 @@ sources:
 profiles:
   astro-web:
     rules:
-      - universal
+      - universal-coding
       - typescript-web
-      - astro
+      - astro-web
     skills:
       - vibesec
       - cpc-init
@@ -58,7 +58,7 @@ profiles:
 
   python-cli:
     rules:
-      - universal
+      - universal-coding
       - python-cli
     skills:
       - cpc-init
@@ -109,7 +109,7 @@ Each stack defines its own verification commands in its `*-review.md` file:
 | `typescript-web` | `npm run lint && npm run typecheck && npm run format:check && npm run test && npm run build` | `typescript-web-review.md` |
 | `python-cli` | `uv run pytest` | `python-cli-review.md` |
 
-The universal review rule (`universal-review.md`) contains the stack-agnostic checklist and directs you to run the verification commands from your stack's review file.
+The universal review rule (`universal-coding-review.md`) contains the stack-agnostic checklist and directs you to run the verification commands from your stack's review file.
 
 ## Skills
 

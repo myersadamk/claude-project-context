@@ -17,13 +17,13 @@ Run the verification commands from your stack's review rule (e.g., `python-cli-r
 - [ ] No dead code or unused imports
 - [ ] No debug logging left in production code
 
-### Security (-> universal-security.md)
+### Security (-> universal-coding-security.md)
 
 - [ ] No secrets in source
 - [ ] User input sanitized at system boundaries
 - [ ] Security headers maintained
 
-### Code Structure (-> universal-code-structure.md)
+### Code Structure (-> universal-coding-code-structure.md)
 
 - [ ] Functions under 100 lines, aim for ~50
 - [ ] Maximum 3 levels of nesting

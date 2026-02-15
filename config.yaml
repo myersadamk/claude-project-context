@@ -7,9 +7,9 @@ sources:
 profiles:
   astro-web:
     rules:
-      - universal
+      - universal-coding
       - typescript-web
-      - astro
+      - astro-web
     skills:
       - vibesec
       - cpc-init
@@ -17,9 +17,9 @@ profiles:
 
   nextjs-web:
     rules:
-      - universal
+      - universal-coding
       - typescript-web
-      - nextjs
+      - nextjs-web
     skills:
       - vibesec
       - cpc-init
@@ -27,7 +27,7 @@ profiles:
 
   python-cli:
     rules:
-      - universal
+      - universal-coding
       - python-cli
     skills:
       - cpc-init

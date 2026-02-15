@@ -24,9 +24,9 @@ Skip non-rule files (`.cpc.manifest.json`, etc.).
 List what was loaded:
 ```
 Loaded 6 rules:
-  universal-code-structure.md
-  universal-review.md
-  universal-security.md
+  universal-coding-code-structure.md
+  universal-coding-review.md
+  universal-coding-security.md
   python-cli-best-practices.md
   python-cli-click.md
   python-cli-review.md
@@ -85,7 +85,7 @@ Audit the **current diff only**, not the entire repo. This keeps the audit focus
 
 ### Findings
 
-**universal-code-structure.md**
+**universal-coding-code-structure.md**
   ✓ Functions under length limits
   ✗ src/foo.py:42 — 4 levels of nesting (max 3)
 

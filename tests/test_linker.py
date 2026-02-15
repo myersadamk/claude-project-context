@@ -10,7 +10,7 @@ import pytest
 
 from cpc.config import RuleSet
 
-UNIVERSAL = RuleSet("universal")
+UNIVERSAL = RuleSet("universal-coding")
 TYPESCRIPT_WEB = RuleSet("typescript-web")
 
 
@@ -19,8 +19,8 @@ def _create_source_rules(tmp_path: Path) -> Path:
     rules = tmp_path / "rules"
     universal = rules / UNIVERSAL
     universal.mkdir(parents=True)
-    (universal / "universal-review.md").write_text("# Review")
-    (universal / "universal-security.md").write_text("# Security")
+    (universal / "universal-coding-review.md").write_text("# Review")
+    (universal / "universal-coding-security.md").write_text("# Security")
 
     ts = rules / TYPESCRIPT_WEB
     ts.mkdir(parents=True)
@@ -57,7 +57,7 @@ class TestSafetyInvariants:
         # Pre-create a local override file (not a symlink)
         claude_rules = target / ".claude" / "rules"
         claude_rules.mkdir(parents=True)
-        local_file = claude_rules / "universal-review.md"
+        local_file = claude_rules / "universal-coding-review.md"
         local_file.write_text("# My local override")
 
         install_profile(
@@ -81,7 +81,7 @@ class TestSafetyInvariants:
 
         claude_rules = target / ".claude" / "rules"
         claude_rules.mkdir(parents=True)
-        local_file = claude_rules / "universal-security.md"
+        local_file = claude_rules / "universal-coding-security.md"
         local_file.write_text("# Local security rules")
 
         install_profile(
@@ -164,9 +164,9 @@ class TestCorrectBehavior:
         )
 
         rules = target / ".claude" / "rules"
-        link = rules / "universal-review.md"
+        link = rules / "universal-coding-review.md"
         assert link.is_symlink()
-        assert link.resolve().name == "universal-review.md"
+        assert link.resolve().name == "universal-coding-review.md"
         assert len(result.linked) == 2
 
     def test_creates_symlinks_for_selected_skills(self, tmp_path: Path) -> None:

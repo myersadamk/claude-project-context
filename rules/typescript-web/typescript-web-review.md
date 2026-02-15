@@ -43,4 +43,4 @@ Skip `build` only for documentation-only changes. All others MUST pass.
 
 ### Framework-Specific
 
-- [ ] Review against the active framework rules (astro-framework.md, nextjs-architecture.md, etc.)
+- [ ] Review against the active framework rules (astro-web-framework.md, nextjs-web-architecture.md, etc.)

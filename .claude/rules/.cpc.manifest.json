@@ -2,7 +2,7 @@
   "source": "/Users/koi/Repositories/myersadamk/claude-project-context",
   "profile": "python-cli",
   "rules": [
-    "universal",
+    "universal-coding",
     "python-cli"
   ],
   "skills": [
