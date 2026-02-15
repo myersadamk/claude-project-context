@@ -1,6 +1,7 @@
 ---
 name: cpc-audit
 description: Use when you want to check recent code changes against installed cpc rules. Reloads rules into context and audits the current diff.
+argument-hint: "[rule-set...]"
 user-invocable: true
 disable-model-invocation: true
 ---
@@ -17,19 +18,34 @@ Rules loaded at conversation start drift out of context during long sessions. Th
 
 ### 1. Reload Rules
 
-Read **every** `.md` file in `.claude/rules/`. This forces the full rule set back into context.
+Determine which rules to load based on `$ARGUMENTS`:
 
-Skip non-rule files (e.g. dotfiles).
+**No arguments** — read **every** `.md` file in `.claude/rules/`. This is the default behavior.
+
+**With arguments** — parse `$ARGUMENTS` as space-separated rule set names. Always include `universal-coding` even if not listed. Load only files from `.claude/rules/` whose name starts with one of the resolved prefixes (e.g. `python-cli-*.md`, `universal-coding-*.md`).
+
+If a prefix matches zero files, warn and skip it:
+```
+No rules found for 'flutter-mobile' — skipping
+```
+
+Skip non-rule files (e.g. dotfiles) in either mode.
 
 List what was loaded:
 ```
-Loaded 6 rules:
+Loaded 6 rules (filtered by: python-cli):
   universal-coding-code-structure.md
   universal-coding-review.md
   universal-coding-security.md
   python-cli-best-practices.md
   python-cli-click.md
   python-cli-review.md
+```
+
+When no filter is active, omit the parenthetical:
+```
+Loaded 6 rules:
+  ...
 ```
 
 ### 2. Identify Changes
@@ -56,16 +72,13 @@ For each relevant rule, report:
 - ✓ Compliant items (brief)
 - ✗ Violations with file and line reference
 
-### 4. Verification Reminder
+### 4. Run Verification Commands
 
-If any `*-review.md` file defines verification commands, remind the user:
+If any `*-review.md` file defines verification commands, run them and report the results.
 
-```
-Verification commands (from python-cli-review.md):
-  uv run pytest
-```
+Extract commands from the fenced code block under `## Verification Commands` in each loaded review file. Run each command and include the output in the audit report.
 
-Do NOT run the commands automatically — the user decides when to run them.
+If a command fails, flag it clearly in the findings.
 
 ## Scoping
 
@@ -94,5 +107,5 @@ Audit the **current diff only**, not the entire repo. This keeps the audit focus
   ✓ Specific exceptions
 
 ### Verification
-  Run: uv run pytest
+  ✓ uv run pytest — 11 passed
 ```
