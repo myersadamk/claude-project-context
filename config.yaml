@@ -14,6 +14,7 @@ profiles:
       - vibesec
       - cpc-init
       - cpc-audit
+      - cpc-extract
 
   nextjs-web:
     rules:
@@ -24,6 +25,7 @@ profiles:
       - vibesec
       - cpc-init
       - cpc-audit
+      - cpc-extract
 
   python-cli:
     rules:
@@ -32,3 +34,4 @@ profiles:
     skills:
       - cpc-init
       - cpc-audit
+      - cpc-extract
