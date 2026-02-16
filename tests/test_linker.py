@@ -255,6 +255,122 @@ class TestCorrectBehavior:
         assert len(result2.cleaned) == 0
 
 
+class TestGitignoreManagement:
+    """Tests for cpc-managed .gitignore section."""
+
+    def test_creates_gitignore_when_missing(self, tmp_path: Path) -> None:
+        """If no .gitignore exists, create one with just the cpc section."""
+        from cpc.linker import update_gitignore
+
+        target = tmp_path / "project"
+        target.mkdir()
+
+        update_gitignore(
+            target=target,
+            rule_files=["universal-coding-review.md", "universal-coding-security.md"],
+            skill_names=["cpc-init"],
+        )
+
+        gitignore = target / ".gitignore"
+        assert gitignore.exists()
+        content = gitignore.read_text()
+        assert "# cpc:start" in content
+        assert "# cpc:end" in content
+        assert ".claude/rules/universal-coding-review.md" in content
+        assert ".claude/rules/universal-coding-security.md" in content
+        assert ".claude/skills/cpc-init" in content
+        assert ".claude/.cpc.manifest.json" in content
+
+    def test_appends_to_existing_gitignore(self, tmp_path: Path) -> None:
+        """If .gitignore exists without cpc markers, append the section."""
+        from cpc.linker import update_gitignore
+
+        target = tmp_path / "project"
+        target.mkdir()
+        gitignore = target / ".gitignore"
+        gitignore.write_text("node_modules/\n.env\n")
+
+        update_gitignore(
+            target=target,
+            rule_files=["typescript-web-types.md"],
+            skill_names=[],
+        )
+
+        content = gitignore.read_text()
+        assert content.startswith("node_modules/\n.env\n")
+        assert ".claude/rules/typescript-web-types.md" in content
+        assert "# cpc:start" in content
+
+    def test_replaces_existing_cpc_section(self, tmp_path: Path) -> None:
+        """If .gitignore has cpc markers, replace only that section."""
+        from cpc.linker import update_gitignore
+
+        target = tmp_path / "project"
+        target.mkdir()
+        gitignore = target / ".gitignore"
+        gitignore.write_text(
+            "node_modules/\n"
+            "# cpc:start (managed by cpc — do not edit)\n"
+            ".claude/rules/old-rule.md\n"
+            ".claude/.cpc.manifest.json\n"
+            "# cpc:end\n"
+            ".env\n"
+        )
+
+        update_gitignore(
+            target=target,
+            rule_files=["new-rule.md"],
+            skill_names=["vibesec"],
+        )
+
+        content = gitignore.read_text()
+        assert "node_modules/" in content
+        assert ".env" in content
+        assert "old-rule.md" not in content
+        assert ".claude/rules/new-rule.md" in content
+        assert ".claude/skills/vibesec" in content
+
+    def test_preserves_user_content_outside_markers(self, tmp_path: Path) -> None:
+        """Content before and after cpc markers must be untouched."""
+        from cpc.linker import update_gitignore
+
+        target = tmp_path / "project"
+        target.mkdir()
+        gitignore = target / ".gitignore"
+        gitignore.write_text(
+            "# My stuff\nnode_modules/\n"
+            "# cpc:start (managed by cpc — do not edit)\n"
+            ".claude/rules/old.md\n"
+            ".claude/.cpc.manifest.json\n"
+            "# cpc:end\n"
+            "# More stuff\n.env\n"
+        )
+
+        update_gitignore(
+            target=target,
+            rule_files=["new.md"],
+            skill_names=[],
+        )
+
+        content = gitignore.read_text()
+        assert content.startswith("# My stuff\nnode_modules/\n")
+        assert content.endswith("# More stuff\n.env\n")
+
+    def test_idempotent_gitignore_update(self, tmp_path: Path) -> None:
+        """Running update_gitignore twice produces the same result."""
+        from cpc.linker import update_gitignore
+
+        target = tmp_path / "project"
+        target.mkdir()
+
+        args = dict(target=target, rule_files=["a.md", "b.md"], skill_names=["s1"])
+        update_gitignore(**args)
+        first = (target / ".gitignore").read_text()
+        update_gitignore(**args)
+        second = (target / ".gitignore").read_text()
+        assert first == second
+
+
 class TestErrorHandling:
 
     def test_nonexistent_profile_errors(self, tmp_path: Path) -> None:

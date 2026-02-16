@@ -1,2 +1,15 @@
 __pycache__/
 .worktrees/
+
+# cpc:start (managed by cpc — do not edit)
+.claude/rules/python-cli-best-practices.md
+.claude/rules/python-cli-click.md
+.claude/rules/python-cli-review.md
+.claude/rules/python-cli-typing.md
+.claude/rules/universal-coding-code-structure.md
+.claude/rules/universal-coding-review.md
+.claude/rules/universal-coding-security.md
+.claude/skills/cpc-audit
+.claude/skills/cpc-init
+.claude/.cpc.manifest.json
+# cpc:end

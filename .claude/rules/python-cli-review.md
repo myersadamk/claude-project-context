@@ -1,1 +1,0 @@
-../../rules/python-cli/python-cli-review.md
