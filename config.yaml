@@ -35,3 +35,14 @@ profiles:
       - cpc-init
       - cpc-audit
       - cpc-extract
+
+  flutter-app:
+    rules:
+      - universal-coding
+      - flutter-app
+    skills:
+      - flutter-interface-design
+      - vibesec
+      - cpc-init
+      - cpc-audit
+      - cpc-extract
