@@ -371,6 +371,48 @@ class TestGitignoreManagement:
         assert first == second
 
 
+class TestFlutterAppProfile:
+    """Tests for the flutter-app profile resolution."""
+
+    def test_flutter_app_profile_exists(self) -> None:
+        from cpc.config import load_config
+
+        config = load_config()
+        assert "flutter-app" in config.profiles
+
+    def test_flutter_app_profile_rules(self) -> None:
+        from cpc.config import RuleSet, load_config
+
+        config = load_config()
+        profile = config.profiles["flutter-app"]
+        assert RuleSet("universal-coding") in profile.rules
+        assert RuleSet("flutter-app") in profile.rules
+
+    def test_flutter_app_profile_skills(self) -> None:
+        from cpc.config import load_config
+
+        config = load_config()
+        profile = config.profiles["flutter-app"]
+        assert "flutter-interface-design" in profile.skills
+
+    def test_flutter_app_rules_discoverable(self) -> None:
+        from cpc.config import discover_rules, load_config
+
+        config = load_config()
+        profile = config.profiles["flutter-app"]
+        rules = discover_rules(profile.rules)
+        for rule_set in profile.rules:
+            assert len(rules[rule_set]) > 0, f"No files found for rule set: {rule_set}"
+
+    def test_flutter_interface_design_skill_resolvable(self) -> None:
+        from cpc.config import load_config, resolve_skill
+
+        config = load_config()
+        skill_dir = resolve_skill("flutter-interface-design", config.skill_sources)
+        assert skill_dir is not None
+        assert (skill_dir / "SKILL.md").exists()
+
+
 class TestErrorHandling:
 
     def test_nonexistent_profile_errors(self, tmp_path: Path) -> None:

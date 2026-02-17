@@ -10,11 +10,14 @@
 ## Accessibility
 
 - All images MUST have descriptive `alt` (empty `alt=""` only for decorative images)
+- `alt` text MUST NOT include words like "image", "photo", or "picture" — screen readers already announce the element as an image
 - Interactive elements MUST be keyboard accessible (Tab, Enter, Escape)
 - Focus states MUST be visible on all interactive elements
 - Icon-only buttons MUST have ARIA labels
 - Color MUST NOT be the sole indicator of state (pair with icon or text)
-- MUST maintain WCAG AA contrast minimum (4.5:1 for normal text)
+- MUST maintain WCAG AA contrast minimum (4.5:1 for normal text, 3:1 for non-text elements like icons)
+- MUST verify contrast against the actual background — not just the page canvas. Badges, footers, and colored sections have different backgrounds that reduce effective contrast
+- When using opacity modifiers (e.g., `text-ink/70`), MUST calculate the blended color against the background to verify contrast
 
 ## Responsiveness
 
