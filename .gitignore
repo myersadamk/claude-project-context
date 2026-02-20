@@ -1,5 +1,6 @@
 __pycache__/
 .worktrees/
+.DS_Store
 
 # cpc:start (managed by cpc — do not edit)
 .claude/rules/python-cli-best-practices.md
