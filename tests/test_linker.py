@@ -464,6 +464,37 @@ class TestMultiProfileManifest:
         assert load_manifest(target) is None
 
 
+class TestResolveProfiles:
+
+    def test_union_of_two_profiles(self) -> None:
+        from cpc.config import RuleSet, load_config, resolve_profiles
+
+        config = load_config()
+        rule_sets, skill_names = resolve_profiles(
+            ["python-cli", "flutter-app"], config
+        )
+
+        # Both should contribute their rules
+        assert RuleSet("universal-coding") in rule_sets
+        assert RuleSet("python-cli") in rule_sets
+        assert RuleSet("flutter-app") in rule_sets
+        # No duplicates
+        assert rule_sets.count(RuleSet("universal-coding")) == 1
+
+        # Both should contribute their skills
+        assert "cpc-audit" in skill_names
+        assert "flutter-interface-design" in skill_names
+        # No duplicates
+        assert skill_names.count("cpc-audit") == 1
+
+    def test_unknown_profile_errors(self) -> None:
+        from cpc.config import load_config, resolve_profiles
+
+        config = load_config()
+        with pytest.raises(KeyError):
+            resolve_profiles(["nonexistent"], config)
+
+
 class TestErrorHandling:
 
     def test_nonexistent_profile_errors(self, tmp_path: Path) -> None:

@@ -190,6 +190,27 @@ def discover_rules(rule_sets: list[RuleSet], *, rules_dir: Path = RULES_DIR) -> 
     return result
 
 
+def resolve_profiles(
+    profile_names: list[str], config: Config
+) -> tuple[list[RuleSet], list[str]]:
+    """Compute the union of rules and skills across multiple profiles.
+
+    Returns deduplicated lists preserving first-seen order.
+    Raises KeyError if a profile name is not found in config.
+    """
+    seen_rules: dict[RuleSet, None] = {}
+    seen_skills: dict[str, None] = {}
+
+    for name in profile_names:
+        profile = config.profiles[name]  # KeyError if missing
+        for rule in profile.rules:
+            seen_rules.setdefault(rule, None)
+        for skill in profile.skills:
+            seen_skills.setdefault(skill, None)
+
+    return list(seen_rules), list(seen_skills)
+
+
 # ── Status command ─────────────────────────────────────────────────
 
 
