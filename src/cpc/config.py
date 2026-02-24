@@ -217,7 +217,7 @@ def resolve_profiles(
 @click.command()
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
 def status(target: Path) -> None:
-    """Show installed profile, rule sets, skills, and symlink health."""
+    """Show installed profiles, rule sets, skills, and symlink health."""
     target = target.resolve()
     manifest = load_manifest(target)
 
@@ -225,15 +225,21 @@ def status(target: Path) -> None:
         print_error(f"No installation found in {target}")
         raise SystemExit(1)
 
-    console.print(f"\n[label]Profile:[/]  {manifest.profile}")
-    console.print(f"[label]Source:[/]   {manifest.source}")
+    config = load_config()
+    console.print(f"\n[label]Profiles:[/]  {', '.join(manifest.profiles)}")
+    console.print(f"[label]Source:[/]    {manifest.source}")
     console.print(f"[label]Installed:[/] {manifest.installed}")
 
-    console.print(f"\n[label]Rule sets:[/] {', '.join(manifest.rules)}")
-    if manifest.skills:
-        console.print(f"[label]Skills:[/]    {', '.join(manifest.skills)}")
-    else:
-        console.print("[label]Skills:[/]    (none)")
+    # Derive rules and skills from config
+    try:
+        union_rules, union_skills = resolve_profiles(manifest.profiles, config)
+        console.print(f"\n[label]Rule sets:[/] {', '.join(union_rules)}")
+        if union_skills:
+            console.print(f"[label]Skills:[/]    {', '.join(union_skills)}")
+        else:
+            console.print("[label]Skills:[/]    (none)")
+    except KeyError as e:
+        print_warning(f"Profile {e} no longer exists in config. Run 'cpc update'.")
 
     # Check symlink health
     rules_dir = target / ".claude" / "rules"
