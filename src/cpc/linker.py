@@ -392,7 +392,7 @@ def _gitignore_from_profiles(
 @click.command()
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
 def update(target: Path) -> None:
-    """Re-apply profile from manifest and refresh skill sources."""
+    """Re-apply all installed profiles and refresh skill sources."""
     target = target.resolve()
     manifest = load_manifest(target)
 
@@ -402,11 +402,11 @@ def update(target: Path) -> None:
 
     config = load_config()
 
-    if manifest.profile not in config.profiles:
-        print_error(f"Profile '{manifest.profile}' no longer exists in config.")
-        raise SystemExit(1)
-
-    profile = config.profiles[manifest.profile]
+    # Validate all profiles still exist
+    for name in manifest.profiles:
+        if name not in config.profiles:
+            print_error(f"Profile '{name}' no longer exists in config.")
+            raise SystemExit(1)
 
     # Run source update commands
     for source in config.skill_sources:
@@ -425,19 +425,21 @@ def update(target: Path) -> None:
                 if proc.stderr:
                     console.print(f"  [warning]{proc.stderr.strip()}[/]")
 
-    # Resolve skill directories
+    # Compute union and sync
+    union_rules, union_skill_names = resolve_profiles(manifest.profiles, config)
+
     skill_dirs: list[Path] = []
-    for skill_name in profile.skills:
+    for skill_name in union_skill_names:
         skill_path = resolve_skill(skill_name, config.skill_sources)
         if skill_path is not None:
             skill_dirs.append(skill_path)
 
     result = install_profile(
         target=target,
-        rule_sets=profile.rules,
+        rule_sets=union_rules,
         skill_dirs=skill_dirs,
     )
 
     _print_result(result)
-    save_manifest(target, [profile.name])
-    _gitignore_from_profiles(target, [profile.name], config)
+    save_manifest(target, manifest.profiles)
+    _gitignore_from_profiles(target, manifest.profiles, config)
