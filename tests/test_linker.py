@@ -545,6 +545,101 @@ class TestMultiProfileInstall:
         assert profiles == ["python-cli"]
 
 
+class TestMultiProfileUninstall:
+
+    def test_uninstall_one_of_two_profiles(self, tmp_path: Path) -> None:
+        """Uninstalling one profile keeps the other's symlinks."""
+        from cpc.linker import install_profile
+
+        rules_dir = _create_source_rules(tmp_path)
+        target = _create_target(tmp_path)
+
+        # Install both profiles' rules (union)
+        install_profile(
+            target=target,
+            rule_sets=[UNIVERSAL, TYPESCRIPT_WEB],
+            skill_dirs=[],
+            rules_dir=rules_dir,
+        )
+
+        # Sync with only UNIVERSAL (simulating uninstall of typescript-web profile)
+        result = install_profile(
+            target=target,
+            rule_sets=[UNIVERSAL],
+            skill_dirs=[],
+            rules_dir=rules_dir,
+        )
+
+        rules = target / ".claude" / "rules"
+        assert (rules / "universal-coding-review.md").is_symlink()
+        assert not (rules / "typescript-web-types.md").exists()
+        assert len(result.cleaned) == 1
+
+    def test_uninstall_last_profile_cleans_everything(self, tmp_path: Path) -> None:
+        """Uninstalling the last profile removes all symlinks and manifest."""
+        from cpc.config import load_manifest, save_manifest
+        from cpc.linker import install_profile
+
+        rules_dir = _create_source_rules(tmp_path)
+        target = _create_target(tmp_path)
+
+        install_profile(
+            target=target,
+            rule_sets=[UNIVERSAL],
+            skill_dirs=[],
+            rules_dir=rules_dir,
+        )
+        save_manifest(target, ["python-cli"])
+
+        # Sync with empty sets (simulating uninstall of last profile)
+        result = install_profile(
+            target=target,
+            rule_sets=[],
+            skill_dirs=[],
+            rules_dir=rules_dir,
+        )
+
+        save_manifest(target, [])
+        assert load_manifest(target) is None
+        assert len(result.cleaned) == 2
+
+    def test_uninstall_nonexistent_profile(self, tmp_path: Path) -> None:
+        """Uninstalling a profile not in the manifest is detected."""
+        from cpc.config import save_manifest, load_manifest
+
+        target = tmp_path / "project"
+        target.mkdir()
+        save_manifest(target, ["python-cli"])
+        manifest = load_manifest(target)
+        assert manifest is not None
+        assert "flutter-app" not in manifest.profiles
+
+    def test_clean_gitignore_removes_cpc_section(self, tmp_path: Path) -> None:
+        """_clean_gitignore removes the cpc section from .gitignore."""
+        from cpc.linker import _clean_gitignore
+
+        target = tmp_path / "project"
+        target.mkdir()
+        gitignore = target / ".gitignore"
+        gitignore.write_text(
+            "node_modules/\n"
+            "\n"
+            "# cpc:start (managed by cpc — do not edit)\n"
+            ".claude/rules/foo.md\n"
+            ".claude/.cpc.manifest.json\n"
+            "# cpc:end\n"
+            ".env\n"
+        )
+
+        _clean_gitignore(target)
+
+        content = gitignore.read_text()
+        assert "cpc:start" not in content
+        assert "cpc:end" not in content
+        assert "node_modules/" in content
+        assert ".env" in content
+
+
 class TestErrorHandling:
 
     def test_nonexistent_profile_errors(self, tmp_path: Path) -> None:

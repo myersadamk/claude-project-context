@@ -320,6 +320,28 @@ def update_gitignore(
     gitignore_path.write_text(content)
 
 
+def _clean_gitignore(target: Path) -> None:
+    """Remove the cpc-managed section from .gitignore."""
+    gitignore_path = target / ".gitignore"
+    if not gitignore_path.exists():
+        return
+    content = gitignore_path.read_text()
+    if _CPC_START not in content:
+        return
+    start_idx = content.index(_CPC_START)
+    end_idx = content.index(_CPC_END) + len(_CPC_END)
+    if end_idx < len(content) and content[end_idx] == "\n":
+        end_idx += 1
+    # Also remove a leading blank line if present
+    if start_idx > 0 and content[start_idx - 1] == "\n":
+        start_idx -= 1
+    content = content[:start_idx] + content[end_idx:]
+    if content.strip():
+        gitignore_path.write_text(content)
+    else:
+        gitignore_path.unlink()
+
+
 # -- Click commands ----------------------------------------------------------
 
 
@@ -443,3 +465,62 @@ def update(target: Path) -> None:
     _print_result(result)
     save_manifest(target, manifest.profiles)
     _gitignore_from_profiles(target, manifest.profiles, config)
+
+
+@click.command()
+@click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
+@click.option(
+    "--profile",
+    "profile_name",
+    required=True,
+    help="Profile to uninstall.",
+)
+def uninstall(target: Path, profile_name: str) -> None:
+    """Remove a profile and clean up its unique symlinks."""
+    target = target.resolve()
+    manifest = load_manifest(target)
+
+    if manifest is None:
+        print_error(f"No installation found in {target}.")
+        raise SystemExit(1)
+
+    if profile_name not in manifest.profiles:
+        print_error(
+            f"Profile '{profile_name}' is not installed. "
+            f"Installed: {', '.join(manifest.profiles)}"
+        )
+        raise SystemExit(1)
+
+    config = load_config()
+    remaining = [p for p in manifest.profiles if p != profile_name]
+
+    if remaining:
+        union_rules, union_skill_names = resolve_profiles(remaining, config)
+
+        skill_dirs: list[Path] = []
+        for skill_name in union_skill_names:
+            skill_path = resolve_skill(skill_name, config.skill_sources)
+            if skill_path is not None:
+                skill_dirs.append(skill_path)
+
+        result = install_profile(
+            target=target,
+            rule_sets=union_rules,
+            skill_dirs=skill_dirs,
+        )
+
+        _print_result(result)
+        save_manifest(target, remaining)
+        _gitignore_from_profiles(target, remaining, config)
+    else:
+        result = install_profile(
+            target=target,
+            rule_sets=[],
+            skill_dirs=[],
+        )
+
+        _print_result(result)
+        save_manifest(target, [])
+        _clean_gitignore(target)
+
+    console.print(f"  Uninstalled [label]{profile_name}[/]")
