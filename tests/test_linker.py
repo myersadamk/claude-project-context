@@ -413,6 +413,57 @@ class TestFlutterAppProfile:
         assert (skill_dir / "SKILL.md").exists()
 
 
+class TestMultiProfileManifest:
+    """Tests for multi-profile manifest format."""
+
+    def test_save_and_load_multi_profile_manifest(self, tmp_path: Path) -> None:
+        from cpc.config import load_manifest, save_manifest
+
+        target = tmp_path / "project"
+        target.mkdir()
+
+        save_manifest(target, ["python-cli", "flutter-app"])
+        manifest = load_manifest(target)
+
+        assert manifest is not None
+        assert manifest.profiles == ["python-cli", "flutter-app"]
+
+    def test_load_legacy_single_profile_manifest(self, tmp_path: Path) -> None:
+        """Old manifests with 'profile' string migrate to 'profiles' list."""
+        import json
+
+        target = tmp_path / "project"
+        claude_dir = target / ".claude"
+        claude_dir.mkdir(parents=True)
+
+        manifest_path = claude_dir / ".cpc.manifest.json"
+        manifest_path.write_text(json.dumps({
+            "source": "/some/path",
+            "profile": "python-cli",
+            "rules": ["universal-coding", "python-cli"],
+            "skills": ["cpc-init"],
+            "installed": "2026-01-01",
+        }))
+
+        from cpc.config import load_manifest
+        manifest = load_manifest(target)
+
+        assert manifest is not None
+        assert manifest.profiles == ["python-cli"]
+
+    def test_save_empty_profiles_deletes_manifest(self, tmp_path: Path) -> None:
+        from cpc.config import load_manifest, save_manifest
+
+        target = tmp_path / "project"
+        target.mkdir()
+
+        save_manifest(target, ["python-cli"])
+        assert load_manifest(target) is not None
+
+        save_manifest(target, [])
+        assert load_manifest(target) is None
+
+
 class TestErrorHandling:
 
     def test_nonexistent_profile_errors(self, tmp_path: Path) -> None:

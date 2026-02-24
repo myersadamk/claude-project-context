@@ -71,9 +71,7 @@ class Manifest:
     """Recorded state of an installation, written to .cpc.manifest.json."""
 
     source: str
-    profile: str
-    rules: list[str]
-    skills: list[str]
+    profiles: list[str]
     installed: str
 
 
@@ -123,28 +121,43 @@ def load_manifest(target: Path) -> Manifest | None:
             return None
     with open(manifest_path) as f:
         raw = json.load(f)
+
+    # Migrate legacy single-profile format
+    if "profile" in raw and "profiles" not in raw:
+        profiles = [raw["profile"]]
+    else:
+        profiles = raw.get("profiles", [])
+
+    if not profiles:
+        return None
+
     return Manifest(
         source=raw["source"],
-        profile=raw["profile"],
-        rules=raw.get("rules", []),
-        skills=raw.get("skills", []),
+        profiles=profiles,
         installed=raw.get("installed", ""),
     )
 
 
-def save_manifest(target: Path, profile: Profile) -> None:
-    """Write .cpc.manifest.json to the target project."""
+def save_manifest(target: Path, profiles: list[str]) -> None:
+    """Write .cpc.manifest.json to the target project.
+
+    If profiles is empty, deletes the manifest (full uninstall).
+    """
     manifest_path = target / ".claude" / MANIFEST_NAME
     # Clean up legacy location if it exists
     legacy_path = target / ".claude" / "rules" / MANIFEST_NAME
     if legacy_path.exists():
         legacy_path.unlink()
+
+    if not profiles:
+        if manifest_path.exists():
+            manifest_path.unlink()
+        return
+
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     data = {
         "source": str(REPO_ROOT),
-        "profile": profile.name,
-        "rules": profile.rules,
-        "skills": profile.skills,
+        "profiles": profiles,
         "installed": str(__import__("datetime").date.today()),
     }
     with open(manifest_path, "w") as f:
