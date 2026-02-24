@@ -26,6 +26,7 @@ from cpc.config import (
     discover_rules,
     load_config,
     load_manifest,
+    resolve_profiles,
     resolve_skill,
     save_manifest,
 )
@@ -332,7 +333,7 @@ def update_gitignore(
     help="Profile to install (omit for interactive selection).",
 )
 def install(target: Path, profile_name: str | None) -> None:
-    """Install rules and skills into a project."""
+    """Install rules and skills into a project (additive)."""
     target = target.resolve()
     config = load_config()
 
@@ -341,9 +342,22 @@ def install(target: Path, profile_name: str | None) -> None:
     else:
         profile = _select_profile(config)
 
+    # Load existing manifest and append new profile
+    manifest = load_manifest(target)
+    if manifest is not None:
+        profiles = list(manifest.profiles)
+    else:
+        profiles = []
+
+    if profile.name not in profiles:
+        profiles.append(profile.name)
+
+    # Compute union of all installed profiles
+    union_rules, union_skill_names = resolve_profiles(profiles, config)
+
     # Resolve skill directories
     skill_dirs: list[Path] = []
-    for skill_name in profile.skills:
+    for skill_name in union_skill_names:
         skill_path = resolve_skill(skill_name, config.skill_sources)
         if skill_path is None:
             print_warning(f"Skill '{skill_name}' not found in any source.")
@@ -352,23 +366,26 @@ def install(target: Path, profile_name: str | None) -> None:
 
     result = install_profile(
         target=target,
-        rule_sets=profile.rules,
+        rule_sets=union_rules,
         skill_dirs=skill_dirs,
     )
 
     _print_result(result)
-    save_manifest(target, profile)
-    _gitignore_from_profile(target, profile)
+    save_manifest(target, profiles)
+    _gitignore_from_profiles(target, profiles, config)
 
 
-def _gitignore_from_profile(target: Path, profile: Profile) -> None:
-    """Update .gitignore with the files installed by a profile."""
-    discovered = discover_rules(profile.rules)
+def _gitignore_from_profiles(
+    target: Path, profile_names: list[str], config: Config
+) -> None:
+    """Update .gitignore with the union of files from all installed profiles."""
+    rule_sets, skill_names = resolve_profiles(profile_names, config)
+    discovered = discover_rules(rule_sets)
     rule_files = [f.name for files in discovered.values() for f in files]
     update_gitignore(
         target=target,
         rule_files=rule_files,
-        skill_names=profile.skills,
+        skill_names=skill_names,
     )
 
 
@@ -422,5 +439,5 @@ def update(target: Path) -> None:
     )
 
     _print_result(result)
-    save_manifest(target, profile)
-    _gitignore_from_profile(target, profile)
+    save_manifest(target, [profile.name])
+    _gitignore_from_profiles(target, [profile.name], config)

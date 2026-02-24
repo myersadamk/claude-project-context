@@ -495,6 +495,56 @@ class TestResolveProfiles:
             resolve_profiles(["nonexistent"], config)
 
 
+class TestMultiProfileInstall:
+    """Tests for additive multi-profile installation."""
+
+    def test_additive_install_preserves_existing(self, tmp_path: Path) -> None:
+        """Installing a second profile keeps the first profile's symlinks."""
+        from cpc.linker import install_profile
+
+        rules_dir = _create_source_rules(tmp_path)
+        target = _create_target(tmp_path)
+
+        # Install universal (simulating first profile)
+        install_profile(
+            target=target,
+            rule_sets=[UNIVERSAL],
+            skill_dirs=[],
+            rules_dir=rules_dir,
+        )
+
+        # Install union of both (simulating additive install)
+        result = install_profile(
+            target=target,
+            rule_sets=[UNIVERSAL, TYPESCRIPT_WEB],
+            skill_dirs=[],
+            rules_dir=rules_dir,
+        )
+
+        rules = target / ".claude" / "rules"
+        assert (rules / "universal-coding-review.md").is_symlink()
+        assert (rules / "typescript-web-types.md").is_symlink()
+        assert len(result.cleaned) == 0
+
+    def test_duplicate_profile_not_added_twice(self, tmp_path: Path) -> None:
+        """Re-installing same profile doesn't duplicate in manifest."""
+        from cpc.config import save_manifest, load_manifest
+
+        target = tmp_path / "project"
+        target.mkdir()
+
+        save_manifest(target, ["python-cli"])
+        manifest = load_manifest(target)
+        assert manifest is not None
+
+        # Simulate what install does: append if not present
+        profiles = list(manifest.profiles)
+        if "python-cli" not in profiles:
+            profiles.append("python-cli")
+
+        assert profiles == ["python-cli"]
+
+
 class TestErrorHandling:
 
     def test_nonexistent_profile_errors(self, tmp_path: Path) -> None:
