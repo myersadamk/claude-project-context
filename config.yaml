@@ -36,6 +36,17 @@ profiles:
       - cpc-audit
       - cpc-extract
 
+  expo-web:
+    rules:
+      - universal-coding
+      - typescript-web
+      - expo-web
+    skills:
+      - vibesec
+      - cpc-init
+      - cpc-audit
+      - cpc-extract
+
   flutter-app:
     rules:
       - universal-coding
