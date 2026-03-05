@@ -71,9 +71,7 @@ class Manifest:
     """Recorded state of an installation, written to .cpc.manifest.json."""
 
     source: str
-    profile: str
-    rules: list[str]
-    skills: list[str]
+    profiles: list[str]
     installed: str
 
 
@@ -123,28 +121,43 @@ def load_manifest(target: Path) -> Manifest | None:
             return None
     with open(manifest_path) as f:
         raw = json.load(f)
+
+    # Migrate legacy single-profile format
+    if "profile" in raw and "profiles" not in raw:
+        profiles = [raw["profile"]]
+    else:
+        profiles = raw.get("profiles", [])
+
+    if not profiles:
+        return None
+
     return Manifest(
         source=raw["source"],
-        profile=raw["profile"],
-        rules=raw.get("rules", []),
-        skills=raw.get("skills", []),
+        profiles=profiles,
         installed=raw.get("installed", ""),
     )
 
 
-def save_manifest(target: Path, profile: Profile) -> None:
-    """Write .cpc.manifest.json to the target project."""
+def save_manifest(target: Path, profiles: list[str]) -> None:
+    """Write .cpc.manifest.json to the target project.
+
+    If profiles is empty, deletes the manifest (full uninstall).
+    """
     manifest_path = target / ".claude" / MANIFEST_NAME
     # Clean up legacy location if it exists
     legacy_path = target / ".claude" / "rules" / MANIFEST_NAME
     if legacy_path.exists():
         legacy_path.unlink()
+
+    if not profiles:
+        if manifest_path.exists():
+            manifest_path.unlink()
+        return
+
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     data = {
         "source": str(REPO_ROOT),
-        "profile": profile.name,
-        "rules": profile.rules,
-        "skills": profile.skills,
+        "profiles": profiles,
         "installed": str(__import__("datetime").date.today()),
     }
     with open(manifest_path, "w") as f:
@@ -177,13 +190,34 @@ def discover_rules(rule_sets: list[RuleSet], *, rules_dir: Path = RULES_DIR) -> 
     return result
 
 
+def resolve_profiles(
+    profile_names: list[str], config: Config
+) -> tuple[list[RuleSet], list[str]]:
+    """Compute the union of rules and skills across multiple profiles.
+
+    Returns deduplicated lists preserving first-seen order.
+    Raises KeyError if a profile name is not found in config.
+    """
+    seen_rules: dict[RuleSet, None] = {}
+    seen_skills: dict[str, None] = {}
+
+    for name in profile_names:
+        profile = config.profiles[name]  # KeyError if missing
+        for rule in profile.rules:
+            seen_rules.setdefault(rule, None)
+        for skill in profile.skills:
+            seen_skills.setdefault(skill, None)
+
+    return list(seen_rules), list(seen_skills)
+
+
 # ── Status command ─────────────────────────────────────────────────
 
 
 @click.command()
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
 def status(target: Path) -> None:
-    """Show installed profile, rule sets, skills, and symlink health."""
+    """Show installed profiles, rule sets, skills, and symlink health."""
     target = target.resolve()
     manifest = load_manifest(target)
 
@@ -191,15 +225,21 @@ def status(target: Path) -> None:
         print_error(f"No installation found in {target}")
         raise SystemExit(1)
 
-    console.print(f"\n[label]Profile:[/]  {manifest.profile}")
-    console.print(f"[label]Source:[/]   {manifest.source}")
+    config = load_config()
+    console.print(f"\n[label]Profiles:[/]  {', '.join(manifest.profiles)}")
+    console.print(f"[label]Source:[/]    {manifest.source}")
     console.print(f"[label]Installed:[/] {manifest.installed}")
 
-    console.print(f"\n[label]Rule sets:[/] {', '.join(manifest.rules)}")
-    if manifest.skills:
-        console.print(f"[label]Skills:[/]    {', '.join(manifest.skills)}")
-    else:
-        console.print("[label]Skills:[/]    (none)")
+    # Derive rules and skills from config
+    try:
+        union_rules, union_skills = resolve_profiles(manifest.profiles, config)
+        console.print(f"\n[label]Rule sets:[/] {', '.join(union_rules)}")
+        if union_skills:
+            console.print(f"[label]Skills:[/]    {', '.join(union_skills)}")
+        else:
+            console.print("[label]Skills:[/]    (none)")
+    except KeyError as e:
+        print_warning(f"Profile {e} no longer exists in config. Run 'cpc update'.")
 
     # Check symlink health
     rules_dir = target / ".claude" / "rules"

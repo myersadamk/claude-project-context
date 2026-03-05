@@ -7,7 +7,7 @@ import click
 
 from cpc.config import REPO_ROOT, status
 from cpc.console import console, print_error
-from cpc.linker import install, update
+from cpc.linker import install, uninstall, update
 
 WRAPPER_PATH = REPO_ROOT / "bin" / "cpc"
 DEFAULT_BIN_DIR = Path("/usr/local/bin")
@@ -60,6 +60,7 @@ def init(bin_dir: Path) -> None:
 
 main.add_command(init)
 main.add_command(install)
+main.add_command(uninstall)
 main.add_command(update)
 main.add_command(status)
 
