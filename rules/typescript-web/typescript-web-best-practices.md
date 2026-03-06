@@ -40,6 +40,14 @@
 - MUST investigate extraction opportunities if a component file exceeds 200 lines
 - This is a smell threshold, not a hard limit — but it MUST trigger a review of whether the component is doing too much
 
+## Architecture Boundaries
+
+- If the project has a pure-logic layer (e.g. `src/engine/`, `src/lib/core/`, `src/domain/`), those modules MUST NOT import from React, React Native, or any UI framework
+- Pure-logic modules MUST be testable with zero UI dependencies
+- Hooks are the bridge between logic and components — components MUST NOT import directly from the pure-logic layer; they consume it through hooks
+- MUST NOT pass UI primitives (refs, event objects, JSX) into pure-logic modules
+- If a module needs platform-specific behavior, inject it via function arguments or configuration, not framework imports
+
 ## Dependencies
 
 - MUST NOT add new dependencies without explicit discussion
