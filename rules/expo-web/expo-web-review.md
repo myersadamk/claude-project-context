@@ -5,10 +5,7 @@
 These MUST pass before any PR or task completion:
 
 ```bash
-npx expo lint
-npx tsc --noEmit
-npx jest
-npx expo export --platform web
+npm run lint && npm run typecheck && npm run test && npm run build
 ```
 
 ## Checklist
