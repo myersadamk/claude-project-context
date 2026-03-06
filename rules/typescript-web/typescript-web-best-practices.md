@@ -48,6 +48,17 @@
 - MUST NOT pass UI primitives (refs, event objects, JSX) into pure-logic modules
 - If a module needs platform-specific behavior, inject it via function arguments or configuration, not framework imports
 
+## Scripts
+
+- `package.json` MUST expose these standard script names:
+  - `dev` — start the development server
+  - `build` — production build or export
+  - `lint` — run the linter
+  - `test` — run the test suite
+  - `typecheck` — run `tsc --noEmit`
+- Framework-specific commands MUST be aliased to these standard names so `npm run dev`, `npm run build`, etc. work consistently across all projects
+- Additional framework-specific scripts (e.g. `dev:web`, `start:android`) are fine alongside the standard names
+
 ## Dependencies
 
 - MUST NOT add new dependencies without explicit discussion

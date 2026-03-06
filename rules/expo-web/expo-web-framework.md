@@ -45,6 +45,17 @@
 - Web-only APIs (DOM, `window`, `document`) MUST be isolated in `.web.tsx` files
 - Native-only modules MUST be isolated in `.native.tsx` files
 
+## Scripts
+
+- `package.json` MUST define these standard aliases (see typescript-web-best-practices.md):
+  - `"dev": "expo start"`
+  - `"dev:web": "expo start --web"`
+  - `"build": "expo export --platform web"`
+  - `"lint": "expo lint"`
+  - `"test": "jest"`
+  - `"typecheck": "tsc --noEmit"`
+- The Expo template defaults (`start`, `web`, `ios`, `android`) MAY remain alongside the standard names
+
 ## Component Conventions
 
 - Functional components + hooks only — no class components
