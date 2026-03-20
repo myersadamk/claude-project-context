@@ -28,6 +28,13 @@
 - When hydration is needed: `client:load` for above-fold interactive, `client:visible` for below-fold
 - MUST NOT use `client:only` unless the component genuinely cannot SSR
 
+## Page Transitions
+
+- MUST include `<ClientRouter />` from `astro:transitions` in the base layout's `<head>`
+- Without it, every navigation is a full page load causing FOUC, layout shift, and erratic tab titles
+- `ViewTransitions` was renamed to `ClientRouter` in Astro 5 — MUST use the new name
+- If a page needs to opt out, use `<a data-astro-reload>` on the specific link
+
 ## Routing & Pages
 
 - File-based routing in `src/pages/`. One page = one route

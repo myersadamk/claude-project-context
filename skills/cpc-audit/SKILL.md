@@ -1,7 +1,7 @@
 ---
 name: cpc-audit
 description: Use when you want to check recent code changes against installed cpc rules. Reloads rules into context and audits the current diff.
-argument-hint: "[rule-set...]"
+argument-hint: "[commit] [rule-set...]"
 user-invocable: true
 disable-model-invocation: true
 ---
@@ -52,15 +52,15 @@ Loaded 6 rules:
 
 ### 2. Identify Changes
 
-Run:
+**If `$ARGUMENTS` contains `commit`** — audit the most recent commit (`git diff HEAD~1`). Remove `commit` from the argument list before parsing rule-set filters.
+
+**Otherwise** — audit the working tree:
 ```bash
 git diff --cached
 git diff
 ```
 
-If both are empty, check `git diff HEAD~1` for the most recent commit.
-
-If all are empty, report "No changes to audit" and stop.
+If both are empty, report "No changes to audit — use `cpc-audit commit` to audit the last commit" and stop.
 
 If there are staged and unstaged changes, audit both — note which is which.
 
@@ -84,7 +84,9 @@ If a command fails, flag it clearly in the findings.
 
 ## Scoping
 
-Audit the **current diff only**, not the entire repo. This keeps the audit focused and token-efficient.
+Audit the **current diff** for line-level rule compliance. This keeps the audit focused and token-efficient.
+
+However, some rules define **project-wide invariants** — requirements that must hold regardless of what changed (e.g. "base layout MUST include `<ClientRouter />`", "every page MUST have a meta description"). After auditing the diff, scan loaded rules for MUST statements that apply project-wide. For each one, verify the invariant holds — even if the relevant file is not in the diff. Report these under a separate **Project-Wide Invariants** section in the findings.
 
 ## Output Format
 
