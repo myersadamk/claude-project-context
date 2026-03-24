@@ -656,3 +656,76 @@ class TestErrorHandling:
         target = tmp_path / "project"
         target.mkdir()
         assert load_manifest(target) is None
+
+
+class TestJavaSpringProfile:
+    """Tests for the java-spring profile resolution."""
+
+    def test_java_spring_profile_exists(self) -> None:
+        from cpc.config import load_config
+
+        config = load_config()
+        assert "java-spring" in config.profiles
+
+    def test_java_spring_profile_rules(self) -> None:
+        from cpc.config import RuleSet, load_config
+
+        config = load_config()
+        profile = config.profiles["java-spring"]
+        assert RuleSet("universal-coding") in profile.rules
+        assert RuleSet("java") in profile.rules
+        assert RuleSet("java-spring") in profile.rules
+
+    def test_java_spring_profile_skills(self) -> None:
+        from cpc.config import load_config
+
+        config = load_config()
+        profile = config.profiles["java-spring"]
+        assert "cpc-init" in profile.skills
+        assert "cpc-audit" in profile.skills
+        assert "cpc-extract" in profile.skills
+
+    def test_java_rules_discoverable(self) -> None:
+        from cpc.config import RuleSet, discover_rules, load_config
+
+        config = load_config()
+        profile = config.profiles["java-spring"]
+        rules = discover_rules(profile.rules)
+        for rule_set in profile.rules:
+            assert len(rules[rule_set]) > 0, f"No files found for rule set: {rule_set}"
+
+    def test_java_spring_has_review_file(self) -> None:
+        from cpc.config import RuleSet, discover_rules
+
+        rules = discover_rules([RuleSet("java-spring")])
+        review_files = [f for f in rules[RuleSet("java-spring")] if "review" in f.name]
+        assert len(review_files) == 1
+
+
+class TestJavaSpringGraphqlProfile:
+    """Tests for the java-spring-graphql profile resolution."""
+
+    def test_java_spring_graphql_profile_exists(self) -> None:
+        from cpc.config import load_config
+
+        config = load_config()
+        assert "java-spring-graphql" in config.profiles
+
+    def test_java_spring_graphql_profile_rules(self) -> None:
+        from cpc.config import RuleSet, load_config
+
+        config = load_config()
+        profile = config.profiles["java-spring-graphql"]
+        assert RuleSet("universal-coding") in profile.rules
+        assert RuleSet("java") in profile.rules
+        assert RuleSet("java-spring") in profile.rules
+        assert RuleSet("java-spring-graphql") in profile.rules
+
+    def test_java_spring_graphql_rules_discoverable(self) -> None:
+        from cpc.config import discover_rules, load_config
+
+        config = load_config()
+        profile = config.profiles["java-spring-graphql"]
+        rules = discover_rules(profile.rules)
+        for rule_set in profile.rules:
+            assert len(rules[rule_set]) > 0, f"No files found for rule set: {rule_set}"
