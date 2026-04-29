@@ -81,8 +81,11 @@ def test_read_only_agents_have_no_write_tools(path: Path) -> None:
         return
     fm = parse_frontmatter(path)
     # tools field presence is enforced separately by test_read_only_agents_declare_tools_field
-    tools_str = str(fm.get("tools", ""))
-    tools = {t.strip() for t in tools_str.split(",")}
+    raw = fm.get("tools", [])
+    if isinstance(raw, str):
+        tools = {t.strip() for t in raw.split(",")}
+    else:
+        tools = set(raw)
     forbidden = tools & WRITE_TOOLS
     assert not forbidden, (
         f"{path.name}: read-only agent has write tools {forbidden}"
