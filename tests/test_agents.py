@@ -32,7 +32,7 @@ def parse_frontmatter(path: Path) -> dict:
     return yaml.safe_load(match.group(1))
 
 
-AGENT_FILES = sorted(AGENTS_DIR.glob("*.md"))
+AGENT_FILES = sorted(p for p in AGENTS_DIR.glob("*.md") if p.stem != "README")
 
 
 @pytest.mark.parametrize("path", AGENT_FILES, ids=lambda p: p.stem)
