@@ -57,3 +57,24 @@ profiles:
       - cpc-init
       - cpc-audit
       - cpc-extract
+
+  java-spring:
+    rules:
+      - universal-coding
+      - java
+      - java-spring
+    skills:
+      - cpc-init
+      - cpc-audit
+      - cpc-extract
+
+  java-spring-graphql:
+    rules:
+      - universal-coding
+      - java
+      - java-spring
+      - java-spring-graphql
+    skills:
+      - cpc-init
+      - cpc-audit
+      - cpc-extract
