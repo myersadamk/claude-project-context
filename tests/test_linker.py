@@ -413,6 +413,66 @@ class TestFlutterAppProfile:
         assert (skill_dir / "SKILL.md").exists()
 
 
+class TestGodotCsharpProfile:
+    """Tests for the godot-csharp profile and its path-scoped rule sets."""
+
+    NEW_SETS = ("csharp-core", "godot-csharp", "python-tools")
+
+    def test_godot_csharp_profile_rules(self) -> None:
+        from cpc.config import RuleSet, load_config
+
+        profile = load_config().profiles["godot-csharp"]
+        assert profile.rules == [
+            RuleSet("universal-coding"),
+            RuleSet("csharp-core"),
+            RuleSet("godot-csharp"),
+            RuleSet("python-tools"),
+        ]
+
+    def test_godot_csharp_rules_discoverable(self) -> None:
+        from cpc.config import discover_rules, load_config
+
+        profile = load_config().profiles["godot-csharp"]
+        rules = discover_rules(profile.rules)
+        for rule_set in profile.rules:
+            assert len(rules[rule_set]) > 0, f"No files found for rule set: {rule_set}"
+
+    def test_each_new_set_has_a_review_gate(self) -> None:
+        from cpc.config import RULES_DIR
+
+        for rule_set in self.NEW_SETS:
+            review = RULES_DIR / rule_set / f"{rule_set}-review.md"
+            text = review.read_text()
+            assert "## Verification Commands" in text
+            assert "```bash" in text
+
+    def test_review_rules_are_not_path_scoped(self) -> None:
+        """The gate must always be in context, so review files carry no frontmatter."""
+        from cpc.config import RULES_DIR
+
+        for rule_set in self.NEW_SETS:
+            review = RULES_DIR / rule_set / f"{rule_set}-review.md"
+            assert not review.read_text().startswith("---")
+
+    def test_path_scoped_frontmatter_parses(self) -> None:
+        """Claude Code loads a rule unconditionally if its frontmatter doesn't parse."""
+        import yaml
+
+        from cpc.config import RULES_DIR
+
+        for rule_set in self.NEW_SETS:
+            for path in sorted((RULES_DIR / rule_set).glob("*.md")):
+                text = path.read_text()
+                if not text.startswith("---\n"):
+                    continue
+                header = text.split("---\n", 2)[1]
+                data = yaml.safe_load(header)
+                assert isinstance(data, dict), path.name
+                assert set(data) == {"paths"}, path.name
+                assert isinstance(data["paths"], list) and data["paths"], path.name
+                assert all(isinstance(p, str) for p in data["paths"]), path.name
+
+
 class TestMultiProfileManifest:
     """Tests for multi-profile manifest format."""
 

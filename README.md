@@ -23,6 +23,9 @@ Rules and skills live here as markdown files organized by technology stack. The 
 | `astro-web` | `astro-web-framework.md`, `astro-web-testing.md` | Astro-specific patterns |
 | `nextjs-web` | `nextjs-web-architecture.md`, `nextjs-web-mdx.md` | Next.js App Router + MDX |
 | `python-cli` | `python-cli-best-practices.md`, `python-cli-click.md`, `python-cli-typing.md`, `python-cli-review.md` | Python CLI projects (uv, click, rich) |
+| `csharp-core` | `csharp-core-best-practices.md`, `csharp-core-determinism.md`, `csharp-core-testing.md`, `csharp-core-review.md` | Plain .NET libraries, including deterministic simulation code |
+| `godot-csharp` | `godot-csharp-architecture.md`, `godot-csharp-scripting.md`, `godot-csharp-files.md`, `godot-csharp-testing.md`, `godot-csharp-review.md` | Godot 4 .NET game projects |
+| `python-tools` | `python-tools-scripts.md`, `python-tools-blender.md`, `python-tools-review.md` | Standalone stdlib tool scripts and Blender `bpy` scripts inside another project |
 
 Each stack that has verification commands includes a `*-review.md` file. These contain the stack-specific verification gate and checklist. The universal review rule references them instead of hardcoding commands.
 
@@ -33,6 +36,7 @@ Each stack that has verification commands includes a `*-review.md` file. These c
 | Next.js site | `universal-coding` + `typescript-web` + `nextjs-web` |
 | Astro site | `universal-coding` + `typescript-web` + `astro-web` |
 | Python CLI | `universal-coding` + `python-cli` |
+| Godot C# game | `universal-coding` + `csharp-core` + `godot-csharp` + `python-tools` |
 
 ## Config
 
@@ -108,6 +112,9 @@ Each stack defines its own verification commands in its `*-review.md` file:
 | --- | --- | --- |
 | `typescript-web` | `npm run lint && npm run typecheck && npm run format:check && npm run test && npm run build` | `typescript-web-review.md` |
 | `python-cli` | `uv run pytest` | `python-cli-review.md` |
+| `csharp-core` | `dotnet build -warnaserror && dotnet test --no-build && dotnet format --verify-no-changes` | `csharp-core-review.md` |
+| `godot-csharp` | `dotnet build <project> -warnaserror && godot --headless --path <project> --import`, then smoke scenes | `godot-csharp-review.md` |
+| `python-tools` | `python3 -I -m compileall -q .`, then the tools' self-checks | `python-tools-review.md` |
 
 The universal review rule (`universal-coding-review.md`) contains the stack-agnostic checklist and directs you to run the verification commands from your stack's review file.
 
@@ -123,6 +130,10 @@ Skills are Claude Code extensions that provide interactive workflows. They're in
 **cpc-init** reads `*-review.md` files to extract verification commands, then writes a managed section in `CLAUDE.md` delimited by `<!-- cpc:start -->` / `<!-- cpc:end -->`. User content outside the delimiters is preserved.
 
 **cpc-audit** forces all rules back into Claude's context (useful in long sessions where rules drift out of the window), then checks staged and unstaged changes for compliance.
+
+## Path-scoped rules
+
+The `csharp-core`, `godot-csharp` and `python-tools` sets use `paths:` frontmatter, so each rule loads only when Claude touches a matching file. Their `-review.md` files are unscoped, so the gate is always in context. Claude Code doesn't load path-scoped rules that are symlinked from outside the project ([docs](https://code.claude.com/docs/en/memory#share-rules-across-projects-with-symlinks)), so these sets need copied, committed rules. See `docs/plans/2026-10-17-copy-delivery-design.md`.
 
 ## Adding rules
 

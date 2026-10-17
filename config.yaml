@@ -57,3 +57,14 @@ profiles:
       - cpc-init
       - cpc-audit
       - cpc-extract
+
+  godot-csharp:
+    rules:
+      - universal-coding
+      - csharp-core
+      - godot-csharp
+      - python-tools
+    skills:
+      - cpc-init
+      - cpc-audit
+      - cpc-extract
