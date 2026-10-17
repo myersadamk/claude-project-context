@@ -18,7 +18,8 @@ Rules and skills live here as markdown files organized by technology stack. The 
 
 | Set | Files | Purpose |
 | --- | --- | --- |
-| `universal-coding` | `universal-coding-review.md`, `universal-coding-security.md`, `universal-coding-code-structure.md` | Quality gate, security baseline, readability |
+| `universal-coding` | `universal-coding-review.md`, `universal-coding-security.md`, `universal-coding-code-structure.md` | Quality gate, general security baseline, readability |
+| `web-security` | `web-security.md` | Browser and HTTP-server security: output sanitising, CSP and headers |
 | `typescript-web` | `typescript-web-types.md`, `typescript-web-tailwind.md`, `typescript-web-ui.md`, `typescript-web-best-practices.md`, `typescript-web-review.md` | TypeScript + Tailwind web projects |
 | `astro-web` | `astro-web-framework.md`, `astro-web-testing.md` | Astro-specific patterns |
 | `nextjs-web` | `nextjs-web-architecture.md`, `nextjs-web-mdx.md` | Next.js App Router + MDX |
@@ -33,9 +34,11 @@ Each stack that has verification commands includes a `*-review.md` file. These c
 
 | Project type | Sets |
 | --- | --- |
-| Next.js site | `universal-coding` + `typescript-web` + `nextjs-web` |
-| Astro site | `universal-coding` + `typescript-web` + `astro-web` |
+| Next.js site | `universal-coding` + `web-security` + `typescript-web` + `nextjs-web` |
+| Astro site | `universal-coding` + `web-security` + `typescript-web` + `astro-web` |
+| Expo web app | `universal-coding` + `web-security` + `typescript-web` + `expo-web` |
 | Python CLI | `universal-coding` + `python-cli` |
+| Python tool scripts | `universal-coding` + `python-tools` |
 | Godot C# game | `universal-coding` + `csharp-core` + `godot-csharp` + `python-tools` |
 
 ## Config

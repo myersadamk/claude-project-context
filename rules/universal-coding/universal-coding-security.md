@@ -5,25 +5,21 @@
 - MUST NOT commit secrets, API keys, or credentials
 - Use `.env` files, never tracked in source control
 - `.env` MUST be in `.gitignore`
+- MUST NOT log secrets, tokens, or credentials
 
 ## Dependencies
 
 - MUST NOT add dependencies without justification
 - Audit new dependencies: check maintenance status, download count, known vulnerabilities
-- Run `npm audit` periodically
+- Run the ecosystem's audit tool periodically (`npm audit`, `pip-audit`, `dotnet list package --vulnerable`)
 - Prefer existing dependencies over adding new ones
 
-## Input & Output
+## Input
 
-- MUST sanitize user input before rendering
-- MUST NOT use `innerHTML` or equivalent (`set:html`, `dangerouslySetInnerHTML`) with user-supplied content
-- Validate at system boundaries (user input, external APIs)
-
-## Content Security
-
-- Be aware of CSP headers — framework-specific header configuration stays in framework rules
-- MUST NOT disable or weaken existing security headers without justification
-- Client-side scripts MUST NOT fetch or eval external code from untrusted sources
+- Validate at system boundaries (user input, files, external APIs)
+- MUST NOT build shell commands or queries by concatenating untrusted input; pass arguments as a list or use parameters
+- MUST NOT deserialise untrusted data with formats that can construct arbitrary types (`pickle`, `BinaryFormatter`, unsafe YAML loaders)
+- MUST resolve file paths built from untrusted input and check they stay inside the intended directory
 
 ## Full Security Audits
 
