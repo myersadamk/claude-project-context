@@ -8,6 +8,7 @@ profiles:
   astro-web:
     rules:
       - universal-coding
+      - web-security
       - typescript-web
       - astro-web
     skills:
@@ -19,6 +20,7 @@ profiles:
   nextjs-web:
     rules:
       - universal-coding
+      - web-security
       - typescript-web
       - nextjs-web
     skills:
@@ -36,9 +38,19 @@ profiles:
       - cpc-audit
       - cpc-extract
 
+  python-tools:
+    rules:
+      - universal-coding
+      - python-tools
+    skills:
+      - cpc-init
+      - cpc-audit
+      - cpc-extract
+
   expo-web:
     rules:
       - universal-coding
+      - web-security
       - typescript-web
       - expo-web
     skills:
@@ -54,6 +66,17 @@ profiles:
     skills:
       - flutter-interface-design
       - vibesec
+      - cpc-init
+      - cpc-audit
+      - cpc-extract
+
+  godot-csharp:
+    rules:
+      - universal-coding
+      - csharp-core
+      - godot-csharp
+      - python-tools
+    skills:
       - cpc-init
       - cpc-audit
       - cpc-extract

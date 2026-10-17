@@ -12,7 +12,7 @@ A centralized repository of coding rules, best practices, and skills for Claude 
 ## Project structure
 
 - `src/cpc/` — CLI tool (`click`-based), with config loading, symlinking, and status commands
-- `rules/` — rule set directories (`universal-coding`, `python-cli`, `typescript-web`, `astro-web`, `nextjs-web`)
+- `rules/` — rule set directories (`universal-coding`, `python-cli`, `typescript-web`, `astro-web`, `nextjs-web`, `web-security`, `python-tools`)
 - `skills/` — skill directories (sourced locally and from external repos)
 - `config.yaml` — profile definitions and skill source configuration
 
