@@ -41,4 +41,4 @@ For code whose output must be reproducible from a seed and inputs: simulation, p
 ## Proof
 
 - MUST have a test that runs the same seed and inputs twice and compares a full-state hash, plus known-answer tests from an independent reference (-> csharp-core-testing.md).
-- SHOULD enforce the banned APIs with `Microsoft.CodeAnalysis.BannedApiAnalyzers` (RS0030) and a `BannedSymbols.txt` on the deterministic project, rather than relying on review. List every overload (`M:System.Math.Pow(System.Double,System.Double)`): a bare method name bans nothing. Indirect uses (`HashCode.Combine` of a string) still need review.
+- MUST enforce the banned APIs with `Microsoft.CodeAnalysis.BannedApiAnalyzers` (RS0030) and a `BannedSymbols.txt` on the deterministic project, enforced by the build (findings fail every build, not only a lint run), rather than relying on review. List every overload (`M:System.Math.Pow(System.Double,System.Double)`): a bare method name bans nothing. Indirect uses (`HashCode.Combine` of a string) still need review.

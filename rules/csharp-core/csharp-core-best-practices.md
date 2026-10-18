@@ -14,8 +14,8 @@ For plain .NET libraries with no engine or UI dependency. Engine-facing code add
 
 - MUST enable `<Nullable>enable</Nullable>` and `<WarningsAsErrors>nullable</WarningsAsErrors>` in the project, so every build (IDE, editor, CI) fails on a nullable warning, and MUST build with `-warnaserror` in the gate. Nullable analysis is compile-time only; it guarantees nothing unless warnings fail the build.
 - MUST commit an `.editorconfig` and keep `dotnet format --verify-no-changes` clean. Formatting is the tool's job, not the reviewer's.
-- SHOULD turn on analyzers by category, not wholesale. `<AnalysisLevelGlobalization>latest-recommended</AnalysisLevelGlobalization>` adds the culture rules (CA1304, CA1305, CA1309, CA1310, CA1311) with no noise; `latest-recommended` for everything adds dozens of style suggestions. Raise single rules in `.editorconfig` (`dotnet_diagnostic.CA1307.severity = warning`).
-- SHOULD set `<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>` and `<GenerateDocumentationFile>true</GenerateDocumentationFile>` with `CS1591` in `NoWarn`. Without the doc file, the compiler never checks `<see cref="…"/>` (CS1574) and unused usings (IDE0005) aren't reported in the build.
+- MUST turn on analyzers by category, not wholesale. `<AnalysisLevelGlobalization>latest-recommended</AnalysisLevelGlobalization>` adds the culture rules (CA1304, CA1305, CA1309, CA1310, CA1311) with no noise; `latest-recommended` for everything adds dozens of style suggestions. Raise single rules in `.editorconfig` (`dotnet_diagnostic.CA1307.severity = warning`).
+- MUST set `<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>` and `<GenerateDocumentationFile>true</GenerateDocumentationFile>` with `CS1591` in `NoWarn`. Without the doc file, the compiler never checks `<see cref="…"/>` (CS1574) and unused usings (IDE0005) aren't reported in the build.
 - Pin the SDK with `global.json`. The library's target framework is the API floor its consumers need; tests may target newer.
 - MUST NOT reference engine or UI assemblies from the library. Enforce it with a test (-> csharp-core-testing.md).
 
