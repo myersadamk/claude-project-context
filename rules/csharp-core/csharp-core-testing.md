@@ -27,6 +27,14 @@ paths:
 - Name tests for the behaviour they pin: `Unobstructed_dodge_travels_the_tuned_distance`, not `Test3`.
 - A test project may target a newer framework than the library. Runtime behaviour (JSON parsing, globalization) then comes from the test's runtime, not the library's target.
 
+## Time Is an Input
+
+- MUST NOT assert on wall-clock durations in functional tests ("finished within 1 s"). A loaded machine fails them: parallel builds, renders and agents are normal here.
+- Code that needs the time MUST take it as an input. In .NET 8+ use `System.TimeProvider` (inject it; production passes `TimeProvider.System`) and test with `FakeTimeProvider` (`Microsoft.Extensions.TimeProvider.Testing`), advancing time explicitly. Simulation code already uses ticks, not clocks.
+- Anything that polls (file watchers, hot reload, retries) MUST expose the poll step, so a test calls it directly and asserts "on the next poll" or "within N polls", not "within N seconds".
+- Wall-clock timeouts exist only as **hang guards**: generous (about 10× the expected time), and they fail with "hung", never as a correctness check.
+- Speed is measured, not asserted, in the gate: performance belongs in perf tests (e.g. `Category=Perf`) that report numbers and run separately.
+
 ## Architecture Tests
 
 - Enforce layer boundaries with a test, not a grep: check `typeof(SomeCoreType).Assembly.GetReferencedAssemblies()` for forbidden names. A grep over the source tree also matches build output, comments and paths.

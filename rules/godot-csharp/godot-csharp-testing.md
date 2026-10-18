@@ -23,6 +23,13 @@ Rules decided by the engine are tested in the plain C# library (-> csharp-core-t
 - Code that steps the simulation synchronously MUST NOT await in between, or `_PhysicsProcess` will step it again with device input.
 - Poses, animation mixers and transforms only update in a live tree: seek and advance from inside the scene, not from a `SceneTree` script's init.
 
+## Time Is an Input
+
+- MUST NOT assert on wall-clock seconds in smoke scenes. Count frames or physics ticks you step, or call the poll or reload method directly, and assert "within N frames/polls".
+- Hot-reload and file-watcher tests MUST trigger the poll themselves (or step a known number of frames), not sleep and hope.
+- The runner's per-scene `timeout` is a hang guard only (generous, about 10× normal). A scene that needs it to pass is broken.
+- Frame-time and render cost are reported by benches, not asserted in the gate.
+
 ## Known Answers in the Engine
 
 - Every mapping between engine space and simulation space (positions, yaw, scale) MUST have at least one hand-derived known-answer check. End-to-end checks that read back through the same mapping cancel its bugs out.
